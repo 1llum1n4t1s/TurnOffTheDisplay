@@ -1,11 +1,10 @@
-# README
-**【ソフト名】** ディスプレイ＠OFF
-**【バージョン】** 2.00
-**【著作権者】** ゆろ
-**【動作確認済みOS】** Windows7以降
-**【連絡/入手先URL】** https://github.com/yule-rosetta/TurnOffTheDisplay/releases/
-
 ## ■ソフト概要■  
+【ソフト名】TurnOffTheDisplay  
+【バージョン】2.00  
+【著作権者】ゆろ  
+【動作確認済みOS】Windows7以降  
+【連絡/入手先URL】https://github.com/yule-rosetta/TurnOffTheDisplay/releases/  
+
 ディスプレイをスタンバイモードに移行するソフトです。  
 電源プランのディスプレイの電源を切る時と同じ動作を実行します。  
 席を外す際や、PCを起動させたままでディスプレイをスタンバイモードに移行させたい場合などにお使いください。  
