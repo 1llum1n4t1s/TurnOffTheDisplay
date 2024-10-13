@@ -1,9 +1,9 @@
 # README
-**【ソフト名】**ディスプレイ＠OFF
+**【ソフト名】** ディスプレイ＠OFF
 **【バージョン】** 2.00
 **【著作権者】** ゆろ
 **【動作確認済みOS】** Windows7以降
-**【連絡/入手先URL】** [http://yuro.wiki.fc2.com/](http://yuro.wiki.fc2.com/)  
+**【連絡/入手先URL】** https://github.com/yule-rosetta/TurnOffTheDisplay/releases/
 
 ## ■ソフト概要■  
 ディスプレイをスタンバイモードに移行するソフトです。  
