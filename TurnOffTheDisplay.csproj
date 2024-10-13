@@ -13,6 +13,8 @@
         <Description>ディスプレイをスタンバイモードに移行するソフトです。  
 電源プランのディスプレイの電源を切る時と同じ動作を実行します。  
 席を外す際や、PCを起動させたままでディスプレイをスタンバイモードに移行させたい場合などにお使いください。  </Description>
+        <PackageProjectUrl>https://github.com/yule-rosetta/TurnOffTheDisplay/releases</PackageProjectUrl>
+        <NeutralLanguage>ja-JP</NeutralLanguage>
     </PropertyGroup>
 
 </Project>
