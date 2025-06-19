@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net8.0-windows</TargetFramework>
+        <TargetFramework>net9.0-windows8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
@@ -15,6 +15,14 @@
 席を外す際や、PCを起動させたままでディスプレイをスタンバイモードに移行させたい場合などにお使いください。  </Description>
         <PackageProjectUrl>https://github.com/yule-rosetta/TurnOffTheDisplay/releases</PackageProjectUrl>
         <NeutralLanguage>ja-JP</NeutralLanguage>
+        <SupportedOSPlatformVersion>8.0</SupportedOSPlatformVersion>
+        <UseWindowsForms>False</UseWindowsForms>
     </PropertyGroup>
+
+    <ItemGroup>
+      <None Remove=".gitignore" />
+      <None Remove="LICENSE" />
+      <None Remove="README.md" />
+    </ItemGroup>
 
 </Project>
