@@ -5,19 +5,36 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="ディスプレイ＠OFF"
-        Height="100"
-        Width="150"
+        Height="120"
+        Width="200"
         ResizeMode="NoResize"
         WindowStyle="ToolWindow"
         WindowStartupLocation="CenterScreen"
         Topmost="True"
-        >
+        KeyDown="Window_KeyDown"
+        Icon="icon/icon.ico">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
         <Label x:Name="lblCount"
                Content="5"
                HorizontalAlignment="Center"
                VerticalAlignment="Center"
                FontSize="24"
+               Grid.Row="0"
+        />
+        
+        <Button x:Name="btnCancel"
+                Content="キャンセル (ESC)"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Margin="5"
+                Padding="10,5"
+                Click="BtnCancel_Click"
+                Grid.Row="1"
         />
     </Grid>
 </Window>
