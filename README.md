@@ -15,8 +15,11 @@ Windows の電源プランで設定される「ディスプレイの電源を切
 
 ## システム要件
 
-- **OS**: Windows 8 以降
-- **.NET**: .NET 9.0 Runtime
+- **OS**:
+Windows 8 以降
+
+- **.NET**:
+.NET 9.0 Runtime
 
 ## 使用方法
 
@@ -27,9 +30,8 @@ Windows の電源プランで設定される「ディスプレイの電源を切
 
 ## インストール
 
-1. https://1llum1n4t1.notion.site/app から最新版をダウンロード
-2. ダウンロードしたファイルを任意のフォルダに展開
-3. `TurnOffTheDisplay.exe` を実行
+1. ダウンロードしたファイルを任意のフォルダに展開
+2. `TurnOffTheDisplay.exe` を実行
 
 ## 更新履歴
 
@@ -75,7 +77,7 @@ SOFTWARE.
 
 ## サポート・連絡先
 
-- **公式サイト**: https://1llum1n4t1.notion.site/app
+https://1llum1n4t1.notion.site/app
 
 ## 免責事項
 
