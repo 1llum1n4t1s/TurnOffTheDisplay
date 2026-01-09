@@ -44,4 +44,8 @@
       <Resource Include="icon\icon_512.png" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Velopack" Version="0.0.571" />
+    </ItemGroup>
+
 </Project>
