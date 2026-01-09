@@ -19,7 +19,7 @@ Windows の電源プランで設定される「ディスプレイの電源を切
 Windows 8 以降
 
 - **.NET**:
-.NET 9.0 Runtime
+.NET 10.0 Runtime
 
 ## 使用方法
 
@@ -77,7 +77,7 @@ SOFTWARE.
 
 ## サポート・連絡先
 
-https://1llum1n4t1.notion.site/app
+https://1llum1n4t1.org/
 
 ## 免責事項
 
