@@ -1,0 +1,51 @@
+name: Velopack リリース
+
+on:
+  push:
+    branches:
+      - releases
+
+permissions:
+  contents: write
+
+jobs:
+  velopack-release:
+    name: Velopack リリース
+    runs-on: windows-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: .NET SDK をセットアップ
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: バージョンを取得
+        id: version
+        shell: pwsh
+        run: |
+          $version = (Select-Xml -Path TurnOffTheDisplay.csproj -XPath "/Project/PropertyGroup/Version").Node.InnerText
+          "value=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Velopack ツールをインストール
+        shell: pwsh
+        run: |
+          dotnet tool install -g vpk
+          echo "$env:USERPROFILE\\.dotnet\\tools" >> $env:GITHUB_PATH
+
+      - name: アプリを公開ビルド
+        run: dotnet publish TurnOffTheDisplay.csproj -c Release -r win-x64 --self-contained false -o publish
+
+      - name: Velopack パッケージを作成
+        shell: pwsh
+        run: |
+          vpk pack -u TurnOffTheDisplay -v ${{ steps.version.outputs.value }} -p publish -e TurnOffTheDisplay.exe -o artifacts
+
+      - name: GitHub Releases へ公開
+        shell: pwsh
+        run: |
+          vpk publish github -r ${{ github.repository }} -t ${{ secrets.GITHUB_TOKEN }} -p artifacts

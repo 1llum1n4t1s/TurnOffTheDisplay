@@ -36,6 +36,15 @@ Windows 8 以降
 
 ※Velopack による初回インストールと自動更新が有効な環境では、初回起動時にセットアップが実行され、以降は起動時に更新を自動適用します。
 
+## 公開手順
+
+1. `TurnOffTheDisplay.csproj` の `<Version>` を更新
+2. 変更を `releases` ブランチへ push
+3. `releases` ブランチへの push をトリガーに、GitHub Actions が Velopack のリリース作成と GitHub Releases へのアップロードを実行
+
+※`main` ブランチへの push は公開対象外です。  
+※ワークフロー内でタグを作成するステップはありません。
+
 ## 更新履歴
 
 ### Ver 2.00 (2025/07/19)
@@ -80,7 +89,7 @@ SOFTWARE.
 
 ## サポート・連絡先
 
-https://1llum1n4t1.org/
+https://github.com/1llum1n4t1s
 
 ## 免責事項
 
