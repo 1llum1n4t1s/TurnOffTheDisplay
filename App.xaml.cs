@@ -14,14 +14,18 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
-        base.OnStartup(e);
-
         VelopackApp.Build().Run();
 
-        await CheckForUpdatesAsync();
+        var shouldContinue = await CheckForUpdatesAsync();
+        if (!shouldContinue)
+        {
+            return;
+        }
+
+        base.OnStartup(e);
     }
 
-    private static async Task CheckForUpdatesAsync()
+    private static async Task<bool> CheckForUpdatesAsync()
     {
         var source = new GithubSource(UpdateRepositoryUrl, "TurnOffTheDisplay", prerelease: false);
         using var updateManager = new UpdateManager(source);
@@ -29,10 +33,11 @@ public partial class App : Application
         var updateInfo = await updateManager.CheckForUpdatesAsync();
         if (updateInfo is null)
         {
-            return;
+            return true;
         }
 
         await updateManager.DownloadUpdatesAsync(updateInfo);
         updateManager.ApplyUpdatesAndRestart(updateInfo);
+        return false;
     }
 }
