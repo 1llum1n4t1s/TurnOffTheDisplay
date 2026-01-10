@@ -1,0 +1,29 @@
+name: .NET ビルド
+
+on:
+  push:
+    branches-ignore:
+      - releases
+  pull_request:
+    branches-ignore:
+      - releases
+
+jobs:
+  build:
+    name: ビルド
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: チェックアウト
+        uses: actions/checkout@v4
+
+      - name: .NET SDK のセットアップ
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: 復元
+        run: dotnet restore *.slnx
+
+      - name: ビルド
+        run: dotnet build *.slnx --configuration Release --no-restore
