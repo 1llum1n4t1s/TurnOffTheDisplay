@@ -31,8 +31,8 @@ Windows 8 以降
 
 ## インストール
 
-1. ダウンロードしたファイルを任意のフォルダに展開
-2. `TurnOffTheDisplay.exe` を実行
+1. GitHub Releases から `Setup.exe` をダウンロード
+2. `Setup.exe` を実行して初回インストール
 
 ※Velopack による初回インストールと自動更新が有効な環境では、初回起動時にセットアップが実行され、以降は起動時に更新を自動適用します。
 
@@ -41,6 +41,7 @@ Windows 8 以降
 1. `TurnOffTheDisplay.csproj` の `<Version>` を更新
 2. 変更を `releases` ブランチへ push
 3. `releases` ブランチへの push をトリガーに、GitHub Actions が Velopack のリリース作成と GitHub Releases へのアップロードを実行
+4. 手動公開する場合は、`vpk pack` で生成された `artifacts` フォルダ内のファイル一式を GitHub Releases にアップロードする
 
 ※`main` ブランチへの push は公開対象外です。  
 ※ワークフロー内でタグを作成するステップはありません。
