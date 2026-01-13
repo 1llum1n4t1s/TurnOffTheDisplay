@@ -25,19 +25,31 @@ public partial class App : Application
         base.OnStartup(e);
     }
 
+    /// <summary>
+    /// 更新確認を非同期で実行します。アプリケーションがインストールされていない場合は例外をキャッチして続行します。
+    /// </summary>
+    /// <returns>アプリケーション起動を続行する場合は true、再起動を待つ場合は false</returns>
     private static async Task<bool> CheckForUpdatesAsync()
     {
-        var source = new GithubSource(UpdateRepositoryUrl, "TurnOffTheDisplay", prerelease: false);
-        var updateManager = new UpdateManager(source);
-
-        var updateInfo = await updateManager.CheckForUpdatesAsync();
-        if (updateInfo is null)
+        try
         {
+            var source = new GithubSource(UpdateRepositoryUrl, "TurnOffTheDisplay", prerelease: false);
+            var updateManager = new UpdateManager(source);
+
+            var updateInfo = await updateManager.CheckForUpdatesAsync();
+            if (updateInfo is null)
+            {
+                return true;
+            }
+
+            await updateManager.DownloadUpdatesAsync(updateInfo);
+            updateManager.ApplyUpdatesAndRestart(updateInfo);
+            return false;
+        }
+        catch (Velopack.Exceptions.NotInstalledException)
+        {
+            // アプリケーションがインストールされていない場合は、スキップして起動を続行
             return true;
         }
-
-        await updateManager.DownloadUpdatesAsync(updateInfo);
-        updateManager.ApplyUpdatesAndRestart(updateInfo);
-        return false;
     }
 }
