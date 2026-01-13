@@ -1,51 +1,240 @@
-name: Velopack リリース
+name: Velopack リリース作成
 
 on:
   push:
-    branches:
-      - releases
 
 permissions:
   contents: write
 
 jobs:
-  velopack-release:
-    name: Velopack リリース
+  build-release:
+    name: Velopack リリース作成
     runs-on: windows-latest
-
+    if: ${{ startsWith(github.ref, 'refs/heads/release/') }}
     steps:
       - name: リポジトリをチェックアウト
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: .NET SDK をセットアップ
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
-      - name: バージョンを取得
-        id: version
-        shell: pwsh
-        run: |
-          $version = (Select-Xml -Path TurnOffTheDisplay.csproj -XPath "/Project/PropertyGroup/Version").Node.InnerText
-          "value=$version" >> $env:GITHUB_OUTPUT
+      - name: 依存関係を復元
+        run: dotnet restore TurnOffTheDisplay.slnx
 
-      - name: Velopack ツールをインストール
+      - name: リリースバージョンを設定
         shell: pwsh
         run: |
-          dotnet tool install -g vpk
-          echo "$env:USERPROFILE\\.dotnet\\tools" >> $env:GITHUB_PATH
+          # csproj からバージョンを読み取る
+          $csprojPath = "TurnOffTheDisplay.csproj"
+          $version = $null
+
+          # 正規表現でバージョンを抽出
+          $content = Get-Content -Path $csprojPath -Raw
+          if ($content -match '<Version>([^<]+)</Version>') {
+            $version = $matches[1]
+          }
+
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            Write-Error "Version not found in csproj at: $csprojPath"
+            Write-Host "csproj content:"
+            Get-Content -Path $csprojPath | Select-Object -First 30
+            exit 1
+          }
+
+          Write-Host "Version found: $version"
+          Add-Content -LiteralPath $env:GITHUB_ENV -Value "RELEASE_VERSION=$version" -Encoding utf8
+
+      - name: ターゲットフレームワークを取得
+        shell: pwsh
+        run: |
+          # csproj からターゲットフレームワークを読み取る
+          $csprojPath = "TurnOffTheDisplay.csproj"
+          $targetFramework = $null
+
+          # 正規表現でターゲットフレームワークを抽出
+          $content = Get-Content -Path $csprojPath -Raw
+          if ($content -match '<TargetFramework>([^<]+)</TargetFramework>') {
+            $targetFramework = $matches[1]
+          }
+
+          if ([string]::IsNullOrWhiteSpace($targetFramework)) {
+            Write-Error "TargetFramework not found in csproj"
+            exit 1
+          }
+
+          Write-Host "TargetFramework found: $targetFramework"
+          Add-Content -LiteralPath $env:GITHUB_ENV -Value "TARGET_FRAMEWORK=$targetFramework" -Encoding utf8
 
       - name: アプリを公開ビルド
-        run: dotnet publish TurnOffTheDisplay.csproj -c Release -r win-x64 --self-contained false -o publish
+        shell: pwsh
+        run: |
+          $publishDir = Join-Path "bin" "Release" "$env:TARGET_FRAMEWORK" "win-x64" "publish"
+          if (Test-Path $publishDir) {
+            Remove-Item -Path $publishDir -Recurse -Force
+          }
+
+          Write-Host "Building and publishing application..."
+          Write-Host "Target Framework: $env:TARGET_FRAMEWORK"
+          Write-Host "Publish Dir: $publishDir"
+          dotnet publish "TurnOffTheDisplay.csproj" `
+            -c Release `
+            -r win-x64 `
+            --self-contained false
+
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "dotnet publish failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+
+          Write-Host "Publish directory contents:"
+          Get-ChildItem -Path $publishDir -Recurse -ErrorAction SilentlyContinue | Select-Object -First 20 | ForEach-Object { Write-Host $_.FullName }
+
+          $exePath = Join-Path $publishDir "TurnOffTheDisplay.exe"
+          if (-not (Test-Path $exePath)) {
+            Write-Error "TurnOffTheDisplay.exe not found at: $exePath"
+            exit 1
+          }
+          Write-Host "Successfully built: $exePath"
+
+      - name: Velopack CLI をインストール
+        shell: pwsh
+        run: |
+          dotnet tool install --global vpk
+          $toolsPath = "$env:USERPROFILE\.dotnet\tools"
+          Add-Content -LiteralPath $env:GITHUB_PATH -Value $toolsPath -Encoding utf8
+          Write-Host "Velopack CLI installed to: $toolsPath"
+          Write-Host "PATH environment updated"
 
       - name: Velopack パッケージを作成
         shell: pwsh
         run: |
-          vpk pack -u TurnOffTheDisplay -v ${{ steps.version.outputs.value }} -p publish -e TurnOffTheDisplay.exe -o artifacts
+          $publishDir = Join-Path "bin" "Release" "$env:TARGET_FRAMEWORK" "win-x64" "publish"
+          $outputDir = "artifacts"
+          $iconPath = Join-Path "icon" "app.ico"
 
-      - name: GitHub Releases へ公開
+          if (-not (Test-Path $publishDir)) {
+            Write-Error "Publish directory not found: $publishDir"
+            exit 1
+          }
+
+          if (Test-Path $outputDir) {
+            Remove-Item -Path $outputDir -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
+
+          Write-Host "Creating Velopack package..."
+          Write-Host "  Pack ID: TurnOffTheDisplay"
+          Write-Host "  Version: $env:RELEASE_VERSION"
+          Write-Host "  Title: TurnOffTheDisplay"
+          Write-Host "  Main EXE: TurnOffTheDisplay.exe"
+          Write-Host "  Publish Dir: $publishDir"
+          Write-Host "  Output Dir: $outputDir"
+          Write-Host "  Icon: $iconPath"
+
+          vpk pack `
+            --packId TurnOffTheDisplay `
+            --packVersion $env:RELEASE_VERSION `
+            --packTitle "TurnOffTheDisplay" `
+            --packAuthors "TurnOffTheDisplay" `
+            --mainExe TurnOffTheDisplay.exe `
+            --icon $iconPath `
+            --packDir $publishDir `
+            --outputDir $outputDir `
+            --shortcuts "StartMenu,Desktop"
+
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "vpk pack failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+
+          Write-Host "Velopack パッケージ作成完了"
+          Write-Host "Artifacts directory contents:"
+          if (Test-Path $outputDir) {
+            Get-ChildItem -Path $outputDir -Recurse | ForEach-Object { Write-Host "  $($_.FullName)" }
+          } else {
+            Write-Error "Artifacts directory was not created"
+            exit 1
+          }
+
+      - name: 既存リリースを削除
         shell: pwsh
         run: |
-          vpk publish github -r ${{ github.repository }} -t ${{ secrets.GITHUB_TOKEN }} -p artifacts
+          $versionWithoutPrefix = $env:RELEASE_VERSION
+          Write-Host "Checking for existing release with version: $versionWithoutPrefix"
+
+          try {
+            $releases = @(gh release list --repo "${{ github.repository }}" --json tagName,name --limit 100 | ConvertFrom-Json)
+            Write-Host "Total releases found: $($releases.Count)"
+
+            foreach ($release in $releases) {
+              Write-Host "  - Tag: $($release.tagName), Name: $($release.name)"
+            }
+
+            $existingRelease = $releases | Where-Object { $_.tagName -eq $versionWithoutPrefix } | Select-Object -First 1
+
+            if ($existingRelease) {
+              Write-Host "Found existing release: $($existingRelease.name) (tag: $($existingRelease.tagName))"
+              Write-Host "Deleting release: $versionWithoutPrefix"
+              gh release delete $versionWithoutPrefix --repo "${{ github.repository }}" --yes
+              Write-Host "Release deleted successfully"
+            } else {
+              Write-Host "No existing release found for tag: $versionWithoutPrefix"
+              Write-Host "Existing tags:"
+              foreach ($release in $releases) {
+                Write-Host "  - $($release.tagName)"
+              }
+            }
+          } catch {
+            Write-Host "Error checking releases: $_"
+            Write-Host "Attempting to delete release anyway..."
+            gh release delete $versionWithoutPrefix --repo "${{ github.repository }}" --yes --if-exists 2>$null || Write-Host "No release to delete or deletion failed (this may be expected)"
+          }
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: GitHub Releases にアップロード
+        shell: pwsh
+        run: |
+          $outputDir = "artifacts"
+
+          if (-not (Test-Path $outputDir)) {
+            Write-Error "Artifacts directory not found: $outputDir"
+            exit 1
+          }
+
+          Write-Host "GitHub Releases へのアップロードを開始..."
+          Write-Host "Repository: ${{ github.repository }}"
+          Write-Host "Version: $env:RELEASE_VERSION"
+          Write-Host "Artifacts directory contents:"
+          if (Get-ChildItem -Path $outputDir -Recurse -ErrorAction SilentlyContinue) {
+            Get-ChildItem -Path $outputDir -Recurse | ForEach-Object { Write-Host "  $($_.FullName)" }
+          } else {
+            Write-Host "  (empty)"
+          }
+
+          $repoUrl = "https://github.com/${{ github.repository }}"
+          $releaseName = "TurnOffTheDisplay $env:RELEASE_VERSION"
+
+          Write-Host ""
+          Write-Host "Uploading to GitHub Releases:"
+          Write-Host "  Repository URL: $repoUrl"
+          Write-Host "  Release Name: $releaseName"
+          Write-Host "  Output Dir: $outputDir"
+          Write-Host ""
+
+          vpk upload github `
+            --repoUrl $repoUrl `
+            --token "${{ secrets.GITHUB_TOKEN }}" `
+            --outputDir $outputDir `
+            --channel win `
+            --publish `
+            --releaseName $releaseName
+
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "vpk upload failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+
+          Write-Host "GitHub Releases へのアップロード完了"

@@ -2,28 +2,46 @@ name: .NET ビルド
 
 on:
   push:
-    branches-ignore:
-      - releases
   pull_request:
-    branches-ignore:
-      - releases
 
 jobs:
   build:
-    name: ビルド
-    runs-on: ubuntu-latest
-
+    name: .NET ビルド
+    runs-on: windows-latest
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     steps:
-      - name: チェックアウト
+      - name: リポジトリをチェックアウト
         uses: actions/checkout@v4
 
-      - name: .NET SDK のセットアップ
+      - name: .NET SDK をセットアップ
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: '10.0.x'
 
-      - name: 復元
-        run: dotnet restore *.slnx
+      - name: 依存関係を復元
+        run: dotnet restore TurnOffTheDisplay.slnx
 
       - name: ビルド
-        run: dotnet build *.slnx --configuration Release --no-restore
+        run: dotnet build TurnOffTheDisplay.slnx --configuration Release --no-restore
+
+      - name: テスト実行
+        run: dotnet test TurnOffTheDisplay.slnx --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+        continue-on-error: true
+
+      - name: テスト結果をアップロード
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-Release
+          path: '**/TestResults/*.trx'
+          retention-days: 30
+
+      - name: ビルド成果物をアップロード
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-release
+          path: |
+            bin/Release/**/*.exe
+            bin/Release/**/*.dll
+            !bin/Release/**/ref/**
+          retention-days: 7

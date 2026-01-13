@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -7,7 +7,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
         <LangVersion>default</LangVersion>
-        <Version>2.0.0</Version>
+        <Version>2.0.1</Version>
         <Title>TurnOffTheDisplay</Title>
         <Authors>ゆろち</Authors>
         <Description>ディスプレイをスタンバイモードに移行するソフトです。  
@@ -16,12 +16,15 @@
         <NeutralLanguage>ja-JP</NeutralLanguage>
         <SupportedOSPlatformVersion>8.0</SupportedOSPlatformVersion>
         <UseWindowsForms>False</UseWindowsForms>
-        <ApplicationIcon>icon\icon.ico</ApplicationIcon>
+        <ApplicationIcon>icon\app.ico</ApplicationIcon>
         <AssemblyTitle>TurnOffTheDisplay</AssemblyTitle>
         <AssemblyDescription>ディスプレイをスタンバイモードに移行するソフト</AssemblyDescription>
         <AssemblyCompany>ゆろち</AssemblyCompany>
         <AssemblyProduct>TurnOffTheDisplay</AssemblyProduct>
         <AssemblyCopyright>Copyright © 2025 ゆろち</AssemblyCopyright>
+        <PackageIcon>app_icon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RepositoryUrl>https://github.com/1llum1n4t1s/TurnOffTheDisplay</RepositoryUrl>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -35,17 +38,21 @@
     <ItemGroup>
       <None Remove=".gitignore" />
       <None Remove="LICENSE" />
-      <None Remove="README.md" />
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="icon\icon.ico" />
-      <Resource Include="icon\icon.ico" />
-      <Resource Include="icon\icon_512.png" />
+      <PackageReference Include="Velopack" Version="0.0.1298" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Velopack" Version="0.0.571" />
+      <None Update="icon\app_icon.png">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
+      <None Update="README.md">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
     </ItemGroup>
 
 </Project>

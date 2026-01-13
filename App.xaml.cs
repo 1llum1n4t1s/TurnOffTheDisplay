@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using System.Windows;
 using Velopack;
 using Velopack.Sources;
@@ -28,7 +28,7 @@ public partial class App : Application
     private static async Task<bool> CheckForUpdatesAsync()
     {
         var source = new GithubSource(UpdateRepositoryUrl, "TurnOffTheDisplay", prerelease: false);
-        using var updateManager = new UpdateManager(source);
+        var updateManager = new UpdateManager(source);
 
         var updateInfo = await updateManager.CheckForUpdatesAsync();
         if (updateInfo is null)
