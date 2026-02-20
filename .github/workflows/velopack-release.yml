@@ -81,7 +81,7 @@ jobs:
           dotnet publish "TurnOffTheDisplay.csproj" `
             -c Release `
             -r win-x64 `
-            --self-contained false
+            -o $publishDir
 
           if ($LASTEXITCODE -ne 0) {
             Write-Error "dotnet publish failed with exit code $LASTEXITCODE"
@@ -127,7 +127,7 @@ jobs:
           Write-Host "Creating Velopack package..."
           Write-Host "  Pack ID: TurnOffTheDisplay"
           Write-Host "  Version: $env:RELEASE_VERSION"
-          Write-Host "  Title: TurnOffTheDisplay"
+          Write-Host "  Title: ディスプレイ＠OFF"
           Write-Host "  Main EXE: TurnOffTheDisplay.exe"
           Write-Host "  Publish Dir: $publishDir"
           Write-Host "  Output Dir: $outputDir"
@@ -136,8 +136,8 @@ jobs:
           vpk pack `
             --packId TurnOffTheDisplay `
             --packVersion $env:RELEASE_VERSION `
-            --packTitle "TurnOffTheDisplay" `
-            --packAuthors "TurnOffTheDisplay" `
+            --packTitle "ディスプレイ＠OFF" `
+            --packAuthors "ゆろち" `
             --mainExe TurnOffTheDisplay.exe `
             --icon $iconPath `
             --packDir $publishDir `
@@ -215,7 +215,7 @@ jobs:
           }
 
           $repoUrl = "https://github.com/${{ github.repository }}"
-          $releaseName = "TurnOffTheDisplay $env:RELEASE_VERSION"
+          $releaseName = "ディスプレイ＠OFF $env:RELEASE_VERSION"
 
           Write-Host ""
           Write-Host "Uploading to GitHub Releases:"

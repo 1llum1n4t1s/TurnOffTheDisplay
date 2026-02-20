@@ -1,3 +1,8 @@
 <Solution>
-  <Project Path="TurnOffTheDisplay.csproj" />
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="TurnOffTheDisplay.csproj">
+    <Platform Project="x64" />
+  </Project>
 </Solution>

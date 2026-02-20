@@ -1,87 +1,65 @@
-# TurnOffTheDisplay
+# ディスプレイ＠OFF
 
-## 概要
+**ワンクリックでディスプレイをスタンバイモードに移行するシンプルツール**
 
-**TurnOffTheDisplay** は、ディスプレイを瞬時にスタンバイモードに移行するシンプルなデスクトップアプリケーションです。
+ディスプレイ＠OFF は、Windows の電源プランで設定される「ディスプレイの電源を切る」機能と同等の動作を、ワンクリックで実行できるデスクトップアプリケーションです。席を離れる際や、PC を稼働させたままディスプレイのみを消したい場合に便利です。
 
-Windows の電源プランで設定される「ディスプレイの電源を切る」機能と同等の動作を、ワンクリックで実行できます。席を離れる際や、PC を稼働させたままディスプレイのみを消したい場合に便利です。
+## 🚀 主な特徴
 
-## 特徴
+- **ワンクリック操作**: 起動するだけでディスプレイを即座にオフにします。
+- **カウントダウン機能**: 5秒のカウントダウン後に自動実行します。操作を取り消す余裕があります。
+- **キャンセル機能**: ESC キーまたはキャンセルボタンで、いつでもカウントダウンを中止できます。
+- **軽量・高速起動**: ネイティブ AOT コンパイルにより、瞬時に起動します。
+- **自動更新**: 新しいバージョンが公開されると、アプリ起動時に自動でアップデートされます。常に最新の機能と安定性を提供します。
 
-- 🖥️ **ワンクリック操作**: シンプルなUIでディスプレイを即座にオフ
-- ⏱️ **カウントダウン機能**: 5秒のカウントダウン後に自動実行
-- ⛔ **キャンセル機能**: ESCキーまたはキャンセルボタンで中止可能
-- 🪟 **軽量設計**: 軽快に動作するWPFアプリケーション
-- 🔄 **自動更新**: 起動時に最新バージョンを自動的にチェック・適用
+## 📥 インストール方法
 
-## システム要件
+1. **[GitHub Releases](https://github.com/1llum1n4t1s/TurnOffTheDisplay/releases)** から最新の `Setup.exe` をダウンロードします。
+2. ダウンロードした `Setup.exe` を実行してインストールします。
+3. インストール完了後、デスクトップやスタートメニューからディスプレイ＠OFF を起動できます。
 
-- **OS**: Windows 8 以降
-- **.NET**: .NET 10.0 Runtime（インストール時に自動的にセットアップされます）
+## ⚙️ システム要件
 
-## インストール
+- **OS**: Windows 8 / 10 / 11 (x64)
+- **権限**: 一般ユーザー権限で動作（管理者権限は不要です）
 
-1. [GitHub Releases](https://github.com/1llum1n4t1s/TurnOffTheDisplay/releases) から最新版の `Setup.exe` をダウンロード
-2. `Setup.exe` を実行してインストール
-3. インストール完了後、スタートメニューからアプリケーションを起動できます
+## 📖 使い方
 
-## 使用方法
+1. アプリケーションを起動します。
+2. 5秒のカウントダウンが開始されます。
+3. カウントダウン終了後、ディスプレイが自動的にスタンバイモードに移行します。
+4. 操作をキャンセルしたい場合は、**ESC キー**または**「キャンセル」ボタン**をクリックしてください。
 
-1. アプリケーションを起動
-2. 5秒のカウントダウンが開始されます
-3. カウントダウン終了後、ディスプレイが自動的にスタンバイモードに移行します
-4. 操作をキャンセルしたい場合は、**ESCキー**または**「キャンセル」ボタン**をクリックしてください
+## 🔄 更新履歴
 
-## 更新について
+### Ver 2.0.12 (2026/02)
 
-アプリケーションは起動時に自動的に更新をチェックします。新しいバージョンが利用可能な場合、自動的にダウンロード・適用されます。
-
-## 更新履歴
+- Avalonia UI に移行（WPF から）
+- ネイティブ AOT コンパイル対応
+- MVVM パターン導入 (CommunityToolkit.Mvvm)
+- Windows 起動時の自動アップデートチェック機能追加
+- Velopack によるインストーラー・自動更新基盤の刷新
+- アプリ表示名を「ディスプレイ＠OFF」に変更
 
 ### Ver 2.00 (2025/07/19)
-- WPFアプリケーションとして全面的に再作成
+
+- WPF アプリケーションとして全面的に再作成
 - カウントダウン機能とキャンセル機能を追加
-- UI/UXを改善
+- UI/UX を改善
 
 ### Ver 1.01 (2011/03/23)
+
 - 特定環境下での動作不具合を修正
 - Delphi XE 環境への移行
 
 ### Ver 1.00 (2008/06/21)
+
 - 初回リリース
 
-## ライセンス
+## 📄 ライセンス
 
-このソフトウェアは MIT ライセンスの下で公開されています。
+ディスプレイ＠OFF は MIT License の下で公開されています。
 
-```
-MIT License
+Copyright (c) 2008-2026 ゆろち
 
-Copyright (c) 2025 ゆろち
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
-## サポート・連絡先
-
-https://github.com/1llum1n4t1s
-
-## 免責事項
-
-このソフトウェアの使用によって生じたいかなる損害についても、作者は一切の責任を負いません。ご自身の責任でご利用ください。
+詳細は [LICENSE](LICENSE) ファイルをご参照ください。

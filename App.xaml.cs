@@ -1,39 +1,54 @@
-using System.Threading.Tasks;
-using System.Windows;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
 using Velopack;
 using Velopack.Sources;
 
 namespace TurnOffTheDisplay;
 
 /// <summary>
-/// Interaction logic for App.xaml
+/// Avalonia アプリケーションクラス
 /// </summary>
-public partial class App : Application
+public class App : Application
 {
     private const string UpdateRepositoryUrl = "https://github.com/1llum1n4t1s/TurnOffTheDisplay";
 
-    protected override async void OnStartup(StartupEventArgs e)
+    private void InitializeComponent()
     {
-        VelopackApp.Build().Run();
+        AvaloniaXamlLoader.Load(this);
+    }
 
-        var shouldContinue = await CheckForUpdatesAsync();
-        if (!shouldContinue)
+    public override void Initialize()
+    {
+        InitializeComponent();
+    }
+
+    public override async void OnFrameworkInitializationCompleted()
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            return;
+            var shouldContinue = await CheckForUpdatesAsync();
+            if (!shouldContinue)
+            {
+                desktop.Shutdown();
+                return;
+            }
+
+            desktop.MainWindow = new MainWindow();
         }
 
-        base.OnStartup(e);
+        base.OnFrameworkInitializationCompleted();
     }
 
     /// <summary>
     /// 更新確認を非同期で実行します。アプリケーションがインストールされていない場合は例外をキャッチして続行します。
     /// </summary>
     /// <returns>アプリケーション起動を続行する場合は true、再起動を待つ場合は false</returns>
-    private static async Task<bool> CheckForUpdatesAsync()
+    private static async System.Threading.Tasks.Task<bool> CheckForUpdatesAsync()
     {
         try
         {
-            var source = new GithubSource(UpdateRepositoryUrl, "TurnOffTheDisplay", prerelease: false);
+            var source = new GithubSource(UpdateRepositoryUrl, string.Empty, prerelease: false);
             var updateManager = new UpdateManager(source);
 
             var updateInfo = await updateManager.CheckForUpdatesAsync();

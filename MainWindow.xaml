@@ -1,39 +1,31 @@
-<Window x:Class="TurnOffTheDisplay.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
-        Title="ディスプレイ＠OFF"
-        Height="120"
-        Width="200"
-        ResizeMode="NoResize"
-        WindowStyle="ToolWindow"
-        WindowStartupLocation="CenterScreen"
-        Topmost="True"
-        KeyDown="Window_KeyDown">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        
-        <Label x:Name="lblCount"
-               Content="5"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               FontSize="24"
-               Grid.Row="0"
-        />
-        
-        <Button x:Name="btnCancel"
-                Content="キャンセル (ESC)"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Margin="5"
-                Padding="10,5"
-                Click="BtnCancel_Click"
-                Grid.Row="1"
-        />
+﻿<Window
+    x:Class="TurnOffTheDisplay.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:TurnOffTheDisplay.ViewModels"
+    Title="ディスプレイ＠OFF"
+    Width="200"
+    Height="120"
+    x:DataType="vm:MainWindowViewModel"
+    CanResize="False"
+    Icon="avares://TurnOffTheDisplay/icon/app.ico"
+    SystemDecorations="Full"
+    Topmost="True"
+    WindowStartupLocation="CenterScreen">
+    <Grid RowDefinitions="*,Auto">
+        <TextBlock
+            Grid.Row="0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontSize="24"
+            Text="{Binding CountText}" />
+        <Button
+            Grid.Row="1"
+            Margin="5"
+            Padding="10,5"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Command="{Binding CancelCommand}"
+            Content="キャンセル (ESC)" />
     </Grid>
 </Window>
