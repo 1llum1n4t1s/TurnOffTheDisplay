@@ -42,6 +42,9 @@ internal class Program
             return;
         }
 
+        // Velopack コールバックが発火しなかった場合の保険
+        StartMenuShortcut.EnsureCreated();
+
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 

@@ -15,6 +15,24 @@ internal static class StartMenuShortcut
     private const string ReadmeShortcutName = "README.txt.lnk";
 
     /// <summary>
+    /// フォルダ構成が未完成の場合のみショートカットを作成する（起動時用）
+    /// </summary>
+    public static void EnsureCreated()
+    {
+        var programsFolder = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
+        var appFolder = Path.Combine(programsFolder, FolderName);
+        var appShortcut = Path.Combine(appFolder, AppShortcutName);
+
+        // フォルダとアプリショートカットが揃っていれば何もしない
+        if (File.Exists(appShortcut))
+        {
+            return;
+        }
+
+        Create();
+    }
+
+    /// <summary>
     /// スタートメニューにフォルダとショートカットを作成する
     /// </summary>
     public static void Create()
@@ -24,7 +42,7 @@ internal static class StartMenuShortcut
             var programsFolder = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
 
             // 旧バージョンのフラットなショートカットを削除
-            RemoveLegacyShortcut(programsFolder);
+            RemoveLegacyShortcuts(programsFolder);
 
             var appFolder = Path.Combine(programsFolder, FolderName);
             Directory.CreateDirectory(appFolder);
@@ -67,7 +85,7 @@ internal static class StartMenuShortcut
         try
         {
             var programsFolder = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
-            RemoveLegacyShortcut(programsFolder);
+            RemoveLegacyShortcuts(programsFolder);
             var appFolder = Path.Combine(programsFolder, FolderName);
             if (Directory.Exists(appFolder))
             {
@@ -81,21 +99,27 @@ internal static class StartMenuShortcut
     }
 
     /// <summary>
-    /// 旧バージョンが作成したフラットなショートカット（Programs 直下）を削除する
+    /// 旧バージョン/Velopackが作成したフラットなショートカット（Programs 直下）を削除する。
+    /// packTitle ベース（ディスプレイ＠OFF.lnk）と packId ベース（TurnOffTheDisplay.lnk）の
+    /// 両方を対象にする。
     /// </summary>
-    private static void RemoveLegacyShortcut(string programsFolder)
+    private static void RemoveLegacyShortcuts(string programsFolder)
     {
-        try
+        string[] legacyNames = [AppShortcutName, "TurnOffTheDisplay.lnk"];
+        foreach (var name in legacyNames)
         {
-            var legacyPath = Path.Combine(programsFolder, AppShortcutName);
-            if (File.Exists(legacyPath))
+            try
             {
-                File.Delete(legacyPath);
+                var legacyPath = Path.Combine(programsFolder, name);
+                if (File.Exists(legacyPath))
+                {
+                    File.Delete(legacyPath);
+                }
             }
-        }
-        catch
-        {
-            // 旧ショートカットの削除失敗は無視
+            catch
+            {
+                // 旧ショートカットの削除失敗は無視
+            }
         }
     }
 
