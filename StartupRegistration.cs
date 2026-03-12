@@ -32,7 +32,7 @@ internal static class StartupRegistration
                 return;
             }
 
-            var value = $"\"{exePath}\" --update-check";
+            var value = $"\"{exePath}\" {Program.UpdateCheckArg}";
             key.SetValue(EntryName, value);
         }
         catch
@@ -49,12 +49,7 @@ internal static class StartupRegistration
         try
         {
             using var key = Registry.CurrentUser.OpenSubKey(RunKeyPath, writable: true);
-            if (key == null) return;
-
-            if (key.GetValue(EntryName) != null)
-            {
-                key.DeleteValue(EntryName);
-            }
+            key?.DeleteValue(EntryName, throwOnMissingValue: false);
         }
         catch
         {

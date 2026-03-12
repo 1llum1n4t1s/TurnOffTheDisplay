@@ -38,7 +38,7 @@ public class MainWindow : Window
     {
         InitializeComponent();
 
-        _viewModel = new MainWindowViewModel(TurnOffDisplayAndClose);
+        _viewModel = new MainWindowViewModel(TurnOffDisplayAndClose, Close);
         DataContext = _viewModel;
 
         Closed += (_, _) => _viewModel.Cleanup();

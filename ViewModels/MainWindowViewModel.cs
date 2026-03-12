@@ -10,23 +10,28 @@ namespace TurnOffTheDisplay.ViewModels;
 /// </summary>
 public sealed partial class MainWindowViewModel : ObservableObject
 {
+    private const int CountdownSeconds = 5;
+
     private readonly Action _turnOffAndClose;
+    private readonly Action _closeWindow;
     private readonly DispatcherTimer _countdownTimer;
-    private int _count = 5;
+    private int _count = CountdownSeconds;
 
     /// <summary>
     /// カウントダウン表示テキスト
     /// </summary>
     [ObservableProperty]
-    private string _countText = "5";
+    private string _countText = CountdownSeconds.ToString();
 
     /// <summary>
     /// コンストラクタ
     /// </summary>
     /// <param name="turnOffAndClose">ディスプレイ OFF してウィンドウを閉じるアクション</param>
-    public MainWindowViewModel(Action turnOffAndClose)
+    /// <param name="closeWindow">ウィンドウを閉じるアクション（キャンセル時用）</param>
+    public MainWindowViewModel(Action turnOffAndClose, Action closeWindow)
     {
         _turnOffAndClose = turnOffAndClose;
+        _closeWindow = closeWindow;
 
         _countdownTimer = new DispatcherTimer
         {
@@ -55,13 +60,13 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// キャンセルコマンド — タイマーを停止してウィンドウを閉じる
+    /// キャンセルコマンド — タイマーを停止してウィンドウを閉じる（ディスプレイ OFF しない）
     /// </summary>
     [RelayCommand]
     private void Cancel()
     {
         _countdownTimer.Stop();
-        _turnOffAndClose();
+        _closeWindow();
     }
 
     /// <summary>

@@ -98,6 +98,38 @@ jobs:
           }
           Write-Host "Successfully built: $exePath"
 
+      - name: README.md をテキストファイルに変換
+        shell: pwsh
+        run: |
+          $publishDir = Join-Path "bin" "Release" "$env:TARGET_FRAMEWORK" "win-x64" "publish"
+          $readmePath = "README.md"
+          $outputPath = Join-Path $publishDir "README.txt"
+
+          $content = Get-Content -Path $readmePath -Raw -Encoding UTF8
+
+          # Markdown 記法を除去してプレーンテキストに変換
+          # 画像タグを除去
+          $content = $content -replace '<img[^>]*/?>', ''
+          # HTMLタグを除去
+          $content = $content -replace '<[^>]+>', ''
+          # 見出しの # を除去
+          $content = $content -replace '(?m)^#{1,6}\s+', ''
+          # 絵文字プレフィックスを除去
+          $content = $content -replace '[^\x00-\x7F\u3000-\u9FFF\uFF00-\uFFEF\u0080-\u024F]{1,2}\s', ''
+          # 太字 **text** → text
+          $content = $content -replace '\*\*([^*]+)\*\*', '$1'
+          # リンク [text](url) → text (url)
+          $content = $content -replace '\[([^\]]+)\]\(([^)]+)\)', '$1 ($2)'
+          # 連続する空行を2行に制限
+          $content = $content -replace '(\r?\n){3,}', "`n`n"
+          $content = $content.Trim()
+
+          # BOM 付き UTF-8 で出力（日本語 Windows 互換）
+          $utf8Bom = New-Object System.Text.UTF8Encoding $true
+          [System.IO.File]::WriteAllText($outputPath, $content, $utf8Bom)
+
+          Write-Host "README.txt を生成しました: $outputPath"
+
       - name: Velopack CLI をインストール
         shell: pwsh
         run: |

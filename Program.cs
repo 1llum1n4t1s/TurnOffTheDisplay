@@ -8,6 +8,8 @@ namespace TurnOffTheDisplay;
 /// </summary>
 internal class Program
 {
+    internal const string UpdateCheckArg = "--update-check";
+
     /// <summary>
     /// アプリケーションのエントリーポイント。Velopack のブートストラップを実行後、Avalonia を起動する。
     /// --update-check 引数が指定された場合は UI なしでサイレント更新チェックのみ実行する。
@@ -22,7 +24,7 @@ internal class Program
             .Run();
 
         // サイレント更新チェックモード
-        if (args.Length > 0 && args[0] == "--update-check")
+        if (args.Length > 0 && args[0] == UpdateCheckArg)
         {
             RunSilentUpdateCheck();
             return;
