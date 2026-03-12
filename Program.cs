@@ -21,17 +21,14 @@ internal class Program
             .OnAfterInstallFastCallback(v =>
             {
                 StartupRegistration.Register();
-                StartMenuShortcut.Create();
             })
             .OnAfterUpdateFastCallback(v =>
             {
                 StartupRegistration.Register();
-                StartMenuShortcut.Create();
             })
             .OnBeforeUninstallFastCallback(v =>
             {
                 StartupRegistration.Unregister();
-                StartMenuShortcut.Remove();
             })
             .Run();
 
@@ -41,9 +38,6 @@ internal class Program
             RunSilentUpdateCheck();
             return;
         }
-
-        // Velopack コールバックが発火しなかった場合の保険
-        StartMenuShortcut.EnsureCreated();
 
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }

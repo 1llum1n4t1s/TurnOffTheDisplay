@@ -174,7 +174,7 @@ jobs:
             --icon $iconPath `
             --packDir $publishDir `
             --outputDir $outputDir `
-            --shortcuts "Desktop"
+            --shortcuts "Desktop,StartMenu"
 
           if ($LASTEXITCODE -ne 0) {
             Write-Error "vpk pack failed with exit code $LASTEXITCODE"
