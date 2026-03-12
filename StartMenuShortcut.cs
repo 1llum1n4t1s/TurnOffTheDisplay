@@ -124,7 +124,8 @@ internal static class StartMenuShortcut
     }
 
     /// <summary>
-    /// PowerShell の WScript.Shell COM を使ってショートカットを作成する
+    /// PowerShell の WScript.Shell COM を使ってショートカットを作成する。
+    /// 日本語パス対応のため -EncodedCommand（Base64）で渡す。
     /// </summary>
     private static void CreateShortcut(string shortcutPath, string targetPath, string workingDir)
     {
@@ -135,10 +136,12 @@ internal static class StartMenuShortcut
             $"$sc.WorkingDirectory = '{Escape(workingDir)}'",
             "$sc.Save()");
 
+        var encoded = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(script));
+
         using var process = Process.Start(new ProcessStartInfo
         {
             FileName = "powershell.exe",
-            Arguments = $"-NoProfile -NonInteractive -Command \"{script}\"",
+            Arguments = $"-NoProfile -NonInteractive -EncodedCommand {encoded}",
             CreateNoWindow = true,
             UseShellExecute = false,
         });
