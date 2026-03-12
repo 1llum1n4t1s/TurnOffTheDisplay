@@ -18,9 +18,21 @@ internal class Program
     public static void Main(string[] args)
     {
         VelopackApp.Build()
-            .OnAfterInstallFastCallback(v => StartupRegistration.Register())
-            .OnAfterUpdateFastCallback(v => StartupRegistration.Register())
-            .OnBeforeUninstallFastCallback(v => StartupRegistration.Unregister())
+            .OnAfterInstallFastCallback(v =>
+            {
+                StartupRegistration.Register();
+                StartMenuShortcut.Create();
+            })
+            .OnAfterUpdateFastCallback(v =>
+            {
+                StartupRegistration.Register();
+                StartMenuShortcut.Create();
+            })
+            .OnBeforeUninstallFastCallback(v =>
+            {
+                StartupRegistration.Unregister();
+                StartMenuShortcut.Remove();
+            })
             .Run();
 
         // サイレント更新チェックモード
