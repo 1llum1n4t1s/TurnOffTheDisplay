@@ -44,4 +44,4 @@ jobs:
             bin/Release/**/*.exe
             bin/Release/**/*.dll
             !bin/Release/**/ref/**
-          retention-days: 7
+          retention-days: 3
