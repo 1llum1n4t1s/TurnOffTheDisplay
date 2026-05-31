@@ -11,6 +11,11 @@ internal class Program
     internal const string UpdateCheckArg = "--update-check";
 
     /// <summary>
+    /// 自動更新の配信元ベース URL (Cloudflare R2 totd-updates / カスタムドメイン totd.nephilim.jp)
+    /// </summary>
+    internal const string UpdateBaseUrl = "https://totd.nephilim.jp";
+
+    /// <summary>
     /// アプリケーションのエントリーポイント。Velopack のブートストラップを実行後、Avalonia を起動する。
     /// --update-check 引数が指定された場合は UI なしでサイレント更新チェックのみ実行する。
     /// </summary>
@@ -50,8 +55,7 @@ internal class Program
     {
         try
         {
-            var source = new Velopack.Sources.GithubSource(
-                "https://github.com/1llum1n4t1s/TurnOffTheDisplay", string.Empty, prerelease: false);
+            var source = new Velopack.Sources.SimpleWebSource(UpdateBaseUrl);
             var updateManager = new UpdateManager(source);
 
             if (!updateManager.IsInstalled)
