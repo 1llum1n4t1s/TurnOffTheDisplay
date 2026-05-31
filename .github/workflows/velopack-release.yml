@@ -3,9 +3,10 @@ name: Velopack リリース作成
 on:
   push:
 
-# 通常リリースは R2 単独配信のため GitHub Releases への書き込み権限は不要
+# ⚠️ 一時的: 踏み台 publish (/transfer-cf Step 11.5) の間だけ contents:write。
+# 踏み台 publish 完了後に contents:read へ戻して R2 単独配信にする。
 permissions:
-  contents: read
+  contents: write
 
 # 複数 release/** push が overlap したときの cleanup レース防止のため直列化
 concurrency:
@@ -356,3 +357,30 @@ jobs:
             Write-Error "::error::all deletes failed. check API token permission / bucket name."
             exit 1
           }
+
+      # ⚠️ 一時的 (/transfer-cf Step 11.5): 旧 GithubSource クライアント救済の踏み台 publish。
+      # この 1 リリースを GitHub Releases にも出して旧クライアントの R2 移行起点にする。
+      # 踏み台 publish 完了後にこのステップを削除し permissions も contents:read へ戻す。
+      - name: 踏み台を GitHub Releases に publish (一時的・移行後に削除)
+        shell: pwsh
+        run: |
+          $outputDir = "artifacts"
+          if (-not (Test-Path $outputDir)) {
+            Write-Error "Artifacts directory not found: $outputDir"
+            exit 1
+          }
+          $repoUrl = "https://github.com/${{ github.repository }}"
+          $releaseName = "ディスプレイ＠OFF $env:RELEASE_VERSION"
+          Write-Host "踏み台を GitHub Releases に publish: $releaseName ($repoUrl)"
+          vpk upload github `
+            --repoUrl $repoUrl `
+            --token "${{ secrets.GITHUB_TOKEN }}" `
+            --outputDir $outputDir `
+            --channel win `
+            --publish `
+            --releaseName $releaseName
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "vpk upload (踏み台) failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+          Write-Host "✅ 踏み台 publish 完了: $env:RELEASE_VERSION"
