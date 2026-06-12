@@ -24,7 +24,11 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 # ---- 定数 (旧 CI 版 velopack-release.yml と揃える) ----
-$VpkVersion = '1.2.0'               # Velopack (vpk) は常に最新安定版を使う (ゆろ君ルール)。リリース時に最新を確認して更新
+# Velopack (vpk) は常に最新安定版を使う (ゆろ君ルール): NuGet から実行時に最新を解決して pin する
+$VpkVersion = (Invoke-RestMethod 'https://api.nuget.org/v3-flatcontainer/vpk/index.json' -TimeoutSec 30).versions |
+    Where-Object { $_ -notmatch '-' } | Select-Object -Last 1
+if (-not $VpkVersion) { throw 'vpk の最新安定版バージョンの取得に失敗しました (NuGet API)' }
+Write-Host "vpk 最新安定版: $VpkVersion"
 $WranglerVersion = '4.92.0'         # サプライチェーン対策でバージョン固定
 $Bucket = 'totd-updates'
 $BaseUrl = 'https://totd.nephilim.jp'
