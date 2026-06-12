@@ -68,8 +68,9 @@ if ($env:PATH -notlike "*$vsInstallerDir*") { $env:PATH = "$env:PATH;$vsInstalle
 # vpk (dotnet tool) のランタイム要求とローカル SDK が一致しない場合に備えロールフォワード
 $env:DOTNET_ROLL_FORWARD = 'Major'
 
-$version = ([xml](Get-Content 'TurnOffTheDisplay.csproj' -Raw)).Project.PropertyGroup.Version |
-    Where-Object { $_ } | Select-Object -First 1
+# XPath で取得 (member enumeration は Version を持たない PropertyGroup 混在時に StrictMode で throw する)
+$versionNode = ([xml](Get-Content 'TurnOffTheDisplay.csproj' -Raw)).SelectSingleNode('/Project/PropertyGroup/Version')
+$version = if ($versionNode) { $versionNode.InnerText.Trim() } else { $null }
 if (-not $version) { throw 'TurnOffTheDisplay.csproj から <Version> を取得できませんでした' }
 Write-Host "バージョン: $version"
 
