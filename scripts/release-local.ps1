@@ -1,4 +1,4 @@
-# release-local.ps1 — ローカル署名付き Velopack リリース
+﻿# release-local.ps1 — ローカル署名付き Velopack リリース
 #
 # SimplySign (Certum クラウド署名) は Desktop 接続 + スマホトークンが必要で
 # GitHub Actions からは署名できないため、リリースは本スクリプトでローカル実行する。
