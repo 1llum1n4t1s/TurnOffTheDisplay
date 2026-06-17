@@ -80,9 +80,11 @@ internal class Program
             await updateManager.DownloadUpdatesAsync(updateInfo, null, cts.Token);
             updateManager.ApplyUpdatesAndExit(updateInfo);
         }
-        catch
+        catch (Exception ex)
         {
-            // サイレントモードではエラー (タイムアウト含む) を無視して終了
+            // サイレントモードではエラー (タイムアウト含む) を無視して終了。
+            // 原因究明用に Debug ビルドのみ出力 (Release/AOT では Conditional により除去される)
+            System.Diagnostics.Debug.WriteLine($"Silent update check failed: {ex}");
         }
     }
 

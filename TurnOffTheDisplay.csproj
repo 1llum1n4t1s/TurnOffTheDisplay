@@ -27,8 +27,9 @@
         <PublishAot>true</PublishAot>
         <!-- 通常 build でも AOT/トリム アナライザを有効化し退行を早期検出 (テスト不在の保険) -->
         <IsAotCompatible>true</IsAotCompatible>
-        <!-- AOT バンドルサイズ削減: 本アプリは固定文言/序数比較のみでカルチャ(ICU)・ETW・分散トレース不要 -->
-        <InvariantGlobalization>true</InvariantGlobalization>
+        <!-- AOT バンドルサイズ削減: ETW・分散トレース・例外文言は不要。
+             InvariantGlobalization は Windows AOT では ICU データ非同梱で削減効果が僅少な一方、
+             Velopack 更新処理のカルチャ安全性に影響し得るため未設定 (=既定 false) のままにする。 -->
         <UseSystemResourceKeys>true</UseSystemResourceKeys>
         <EventSourceSupport>false</EventSourceSupport>
         <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
