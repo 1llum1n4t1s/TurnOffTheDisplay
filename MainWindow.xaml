@@ -7,11 +7,15 @@
     Width="200"
     Height="120"
     x:DataType="vm:MainWindowViewModel"
+    CanMinimize="False"
     CanResize="False"
     Icon="avares://TurnOffTheDisplay/icon/app.ico"
-    SystemDecorations="Full"
     Topmost="True"
+    WindowDecorations="Full"
     WindowStartupLocation="CenterScreen">
+    <Window.KeyBindings>
+        <KeyBinding Command="{Binding CancelCommand}" Gesture="Escape" />
+    </Window.KeyBindings>
     <Grid RowDefinitions="*,Auto">
         <TextBlock
             Grid.Row="0"

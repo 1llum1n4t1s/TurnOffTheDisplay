@@ -16,6 +16,17 @@ internal class Program
     internal const string UpdateBaseUrl = "https://totd.nephilim.jp";
 
     /// <summary>
+    /// 更新チェック (マニフェスト取得) のタイムアウト。無応答ネットワークでのゴーストプロセス常駐を素早く防ぐ
+    /// </summary>
+    private static readonly TimeSpan UpdateCheckTimeout = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// 更新ダウンロードのタイムアウト。低速回線/大きな更新でも完了できるよう長めに取りつつ、停止時の常駐は防ぐ。
+    /// チェックとは別枠にすることで、正常だが時間のかかるダウンロードがチェック用の短い budget で打ち切られないようにする
+    /// </summary>
+    private static readonly TimeSpan UpdateDownloadTimeout = TimeSpan.FromMinutes(10);
+
+    /// <summary>
     /// アプリケーションのエントリーポイント。Velopack のブートストラップを実行後、Avalonia を起動する。
     /// --update-check 引数が指定された場合は UI なしでサイレント更新チェックのみ実行する。
     /// </summary>
@@ -40,7 +51,7 @@ internal class Program
         // サイレント更新チェックモード
         if (args.Length > 0 && args[0] == UpdateCheckArg)
         {
-            RunSilentUpdateCheck();
+            RunSilentUpdateCheckAsync().GetAwaiter().GetResult();
             return;
         }
 
@@ -51,7 +62,7 @@ internal class Program
     /// UI なしでサイレント更新チェックを実行する。
     /// Windows ログイン時のスタートアップから呼び出される。
     /// </summary>
-    private static void RunSilentUpdateCheck()
+    private static async Task RunSilentUpdateCheckAsync()
     {
         try
         {
@@ -63,18 +74,25 @@ internal class Program
                 return;
             }
 
-            var updateInfo = updateManager.CheckForUpdatesAsync().GetAwaiter().GetResult();
+            // チェックは小さい I/O。短いタイムアウトで無応答を素早く検出
+            // (CheckForUpdatesAsync は CancellationToken を受けないため WaitAsync でかける)
+            using var checkCts = new CancellationTokenSource(UpdateCheckTimeout);
+            var updateInfo = await updateManager.CheckForUpdatesAsync().WaitAsync(checkCts.Token);
             if (updateInfo is null)
             {
                 return;
             }
 
-            updateManager.DownloadUpdatesAsync(updateInfo).GetAwaiter().GetResult();
+            // ダウンロードはチェックとは別枠の長めタイムアウト (低速回線で正常な DL が打ち切られないように)
+            using var downloadCts = new CancellationTokenSource(UpdateDownloadTimeout);
+            await updateManager.DownloadUpdatesAsync(updateInfo, null, downloadCts.Token);
             updateManager.ApplyUpdatesAndExit(updateInfo);
         }
-        catch
+        catch (Exception ex)
         {
-            // サイレントモードではエラーを無視して終了
+            // サイレントモードではエラー (タイムアウト含む) を無視して終了。
+            // 原因究明用に Debug ビルドのみ出力 (Release/AOT では Conditional により除去される)
+            System.Diagnostics.Debug.WriteLine($"Silent update check failed: {ex}");
         }
     }
 
@@ -84,6 +102,5 @@ internal class Program
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
-            .WithInterFont()
             .LogToTrace();
 }

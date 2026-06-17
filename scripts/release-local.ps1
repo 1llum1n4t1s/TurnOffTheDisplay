@@ -1,4 +1,4 @@
-# release-local.ps1 — ローカル署名付き Velopack リリース
+﻿# release-local.ps1 — ローカル署名付き Velopack リリース
 #
 # SimplySign (Certum クラウド署名) は Desktop 接続 + スマホトークンが必要で
 # GitHub Actions からは署名できないため、リリースは本スクリプトでローカル実行する。
@@ -6,7 +6,7 @@
 #
 # 前提:
 #   - SimplySign Desktop が接続済み (証明書が CurrentUser\My に見えていること)
-#   - TurnOffTheDisplay.csproj の <Version> がリリースしたいバージョンになっていること (/vava 済み)
+#   - Directory.Build.props の <Version> がリリースしたいバージョンになっていること (/vava 済み)
 #   - C:\Users\IMT\dev\Secret\secrets.json に cloudflare.api_token があること
 #
 # 使い方:
@@ -68,10 +68,10 @@ if ($env:PATH -notlike "*$vsInstallerDir*") { $env:PATH = "$env:PATH;$vsInstalle
 # vpk (dotnet tool) のランタイム要求とローカル SDK が一致しない場合に備えロールフォワード
 $env:DOTNET_ROLL_FORWARD = 'Major'
 
-# XPath で取得 (member enumeration は Version を持たない PropertyGroup 混在時に StrictMode で throw する)
-$versionNode = ([xml](Get-Content 'TurnOffTheDisplay.csproj' -Raw)).SelectSingleNode('/Project/PropertyGroup/Version')
+# バージョンは Directory.Build.props の <Version> で一元管理。XPath で取得する。
+$versionNode = ([xml](Get-Content 'Directory.Build.props' -Raw)).SelectSingleNode('/Project/PropertyGroup/Version')
 $version = if ($versionNode) { $versionNode.InnerText.Trim() } else { $null }
-if (-not $version) { throw 'TurnOffTheDisplay.csproj から <Version> を取得できませんでした' }
+if (-not $version) { throw 'Directory.Build.props から <Version> を取得できませんでした' }
 Write-Host "バージョン: $version"
 
 # SimplySign 接続確認 (証明書が見えなければ署名できないので最初に落とす)
