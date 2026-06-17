@@ -16,6 +16,11 @@ internal class Program
     internal const string UpdateBaseUrl = "https://totd.nephilim.jp";
 
     /// <summary>
+    /// サイレント更新チェックの I/O 全体のタイムアウト (無応答ネットワークでのゴーストプロセス常駐を防ぐ)
+    /// </summary>
+    private static readonly TimeSpan UpdateCheckTimeout = TimeSpan.FromSeconds(30);
+
+    /// <summary>
     /// アプリケーションのエントリーポイント。Velopack のブートストラップを実行後、Avalonia を起動する。
     /// --update-check 引数が指定された場合は UI なしでサイレント更新チェックのみ実行する。
     /// </summary>
@@ -40,7 +45,7 @@ internal class Program
         // サイレント更新チェックモード
         if (args.Length > 0 && args[0] == UpdateCheckArg)
         {
-            RunSilentUpdateCheck();
+            RunSilentUpdateCheckAsync().GetAwaiter().GetResult();
             return;
         }
 
@@ -51,7 +56,7 @@ internal class Program
     /// UI なしでサイレント更新チェックを実行する。
     /// Windows ログイン時のスタートアップから呼び出される。
     /// </summary>
-    private static void RunSilentUpdateCheck()
+    private static async Task RunSilentUpdateCheckAsync()
     {
         try
         {
@@ -63,18 +68,21 @@ internal class Program
                 return;
             }
 
-            var updateInfo = updateManager.CheckForUpdatesAsync().GetAwaiter().GetResult();
+            using var cts = new CancellationTokenSource(UpdateCheckTimeout);
+
+            // CheckForUpdatesAsync は CancellationToken を受けないため WaitAsync でタイムアウトをかける
+            var updateInfo = await updateManager.CheckForUpdatesAsync().WaitAsync(cts.Token);
             if (updateInfo is null)
             {
                 return;
             }
 
-            updateManager.DownloadUpdatesAsync(updateInfo).GetAwaiter().GetResult();
+            await updateManager.DownloadUpdatesAsync(updateInfo, null, cts.Token);
             updateManager.ApplyUpdatesAndExit(updateInfo);
         }
         catch
         {
-            // サイレントモードではエラーを無視して終了
+            // サイレントモードではエラー (タイムアウト含む) を無視して終了
         }
     }
 
@@ -84,6 +92,5 @@ internal class Program
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
-            .WithInterFont()
             .LogToTrace();
 }

@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <LangVersion>default</LangVersion>
-        <Version>2.0.30</Version>
+        <!-- バージョンは Directory.Build.props の <Version> で一元管理 (継承)。 -->
         <Title>ディスプレイ＠OFF</Title>
         <Authors>ゆろち</Authors>
         <Description>ディスプレイをスタンバイモードに移行するソフトです。
@@ -25,6 +25,13 @@
         <RepositoryUrl>https://github.com/1llum1n4t1s/TurnOffTheDisplay</RepositoryUrl>
         <!-- ネイティブAOT: Publish 時に -r win-x64 で指定 -->
         <PublishAot>true</PublishAot>
+        <!-- 通常 build でも AOT/トリム アナライザを有効化し退行を早期検出 (テスト不在の保険) -->
+        <IsAotCompatible>true</IsAotCompatible>
+        <!-- AOT バンドルサイズ削減: 本アプリは固定文言/序数比較のみでカルチャ(ICU)・ETW・分散トレース不要 -->
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <UseSystemResourceKeys>true</UseSystemResourceKeys>
+        <EventSourceSupport>false</EventSourceSupport>
+        <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <PlatformTarget>x64</PlatformTarget>
         <Platforms>x64</Platforms>
@@ -36,6 +43,8 @@
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       <DebugType>embedded</DebugType>
+      <!-- Release 配布物ではデバッガ補助コードを除去 (サイズ削減) -->
+      <DebuggerSupport>false</DebuggerSupport>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -57,9 +66,7 @@
     <ItemGroup>
       <PackageReference Include="Avalonia" Version="12.0.4" />
       <PackageReference Include="Avalonia.Desktop" Version="12.0.4" />
-      <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="12.0.4" />
       <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.4" />
-      <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.4" />
       <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
       <PackageReference Include="Velopack" Version="1.2.0" />
     </ItemGroup>
