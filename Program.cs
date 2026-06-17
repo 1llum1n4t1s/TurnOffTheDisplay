@@ -16,9 +16,15 @@ internal class Program
     internal const string UpdateBaseUrl = "https://totd.nephilim.jp";
 
     /// <summary>
-    /// サイレント更新チェックの I/O 全体のタイムアウト (無応答ネットワークでのゴーストプロセス常駐を防ぐ)
+    /// 更新チェック (マニフェスト取得) のタイムアウト。無応答ネットワークでのゴーストプロセス常駐を素早く防ぐ
     /// </summary>
     private static readonly TimeSpan UpdateCheckTimeout = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// 更新ダウンロードのタイムアウト。低速回線/大きな更新でも完了できるよう長めに取りつつ、停止時の常駐は防ぐ。
+    /// チェックとは別枠にすることで、正常だが時間のかかるダウンロードがチェック用の短い budget で打ち切られないようにする
+    /// </summary>
+    private static readonly TimeSpan UpdateDownloadTimeout = TimeSpan.FromMinutes(10);
 
     /// <summary>
     /// アプリケーションのエントリーポイント。Velopack のブートストラップを実行後、Avalonia を起動する。
@@ -68,16 +74,18 @@ internal class Program
                 return;
             }
 
-            using var cts = new CancellationTokenSource(UpdateCheckTimeout);
-
-            // CheckForUpdatesAsync は CancellationToken を受けないため WaitAsync でタイムアウトをかける
-            var updateInfo = await updateManager.CheckForUpdatesAsync().WaitAsync(cts.Token);
+            // チェックは小さい I/O。短いタイムアウトで無応答を素早く検出
+            // (CheckForUpdatesAsync は CancellationToken を受けないため WaitAsync でかける)
+            using var checkCts = new CancellationTokenSource(UpdateCheckTimeout);
+            var updateInfo = await updateManager.CheckForUpdatesAsync().WaitAsync(checkCts.Token);
             if (updateInfo is null)
             {
                 return;
             }
 
-            await updateManager.DownloadUpdatesAsync(updateInfo, null, cts.Token);
+            // ダウンロードはチェックとは別枠の長めタイムアウト (低速回線で正常な DL が打ち切られないように)
+            using var downloadCts = new CancellationTokenSource(UpdateDownloadTimeout);
+            await updateManager.DownloadUpdatesAsync(updateInfo, null, downloadCts.Token);
             updateManager.ApplyUpdatesAndExit(updateInfo);
         }
         catch (Exception ex)
