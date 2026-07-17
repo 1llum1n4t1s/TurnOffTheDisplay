@@ -68,6 +68,10 @@ if ($env:PATH -notlike "*$vsInstallerDir*") { $env:PATH = "$env:PATH;$vsInstalle
 # vpk (dotnet tool) のランタイム要求とローカル SDK が一致しない場合に備えロールフォワード
 $env:DOTNET_ROLL_FORWARD = 'Major'
 
+# Native AOT SDK は OS 環境変数でホストを判定する。PowerShell 起動環境で値が欠けても、
+# Windows 向けリリースをクロス OS 発行と誤判定しないよう明示する。
+$env:OS = 'Windows_NT'
+
 # バージョンは Directory.Build.props の <Version> で一元管理。XPath で取得する。
 $versionNode = ([xml](Get-Content 'Directory.Build.props' -Raw)).SelectSingleNode('/Project/PropertyGroup/Version')
 $version = if ($versionNode) { $versionNode.InnerText.Trim() } else { $null }
