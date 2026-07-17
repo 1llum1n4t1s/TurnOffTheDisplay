@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Codex (ChatGPT) and other coding agents working in this repository.
 
 「ディスプレイ＠OFF」: Windows でディスプレイをスタンバイへ移行する常駐デスクトップアプリ。Avalonia UI + .NET 10 (`net10.0-windows8.0`)、x64 専用、Native AOT、Velopack による自動更新。
 

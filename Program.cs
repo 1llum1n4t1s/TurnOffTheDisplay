@@ -37,10 +37,12 @@ internal class Program
             .OnAfterInstallFastCallback(v =>
             {
                 StartupRegistration.Register();
+                StartMenuShortcutMigration.MoveLegacyShortcutToRoot();
             })
             .OnAfterUpdateFastCallback(v =>
             {
                 StartupRegistration.Register();
+                StartMenuShortcutMigration.MoveLegacyShortcutToRoot();
             })
             .OnBeforeUninstallFastCallback(v =>
             {
