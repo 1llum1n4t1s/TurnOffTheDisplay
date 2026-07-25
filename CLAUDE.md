@@ -43,7 +43,7 @@ pwsh -NoProfile -File scripts/release-local.ps1 -SkipUpload   # build+署名の�
 - それ以外 → `BuildAvaloniaApp().StartWithClassicDesktopLifetime()` で通常 UI 起動
 
 ### サイレント自動更新フロー
-`StartupRegistration` が HKCU `…\Run` に `"<exe>" --update-check` を登録する（インストール/更新時の Velopack callback 経由）。Windows ログイン時にこの引数付きで起動し、`SimpleWebSource("https://totd.nephilim.jp")`（= Cloudflare R2）から更新を取得・適用する。**チェック (30秒) とダウンロード (10分) は別々の `CancellationTokenSource`** を持つ（無応答ネットでの常駐を防ぎつつ、低速回線の正常 DL を打ち切らない）。例外は全て握り潰し（サイレント用途）、`Debug.WriteLine` のみ（Release/AOT では除去）。
+`StartupRegistration` が HKCU `…\Run` に `"<exe>" --update-check` を登録する（インストール/更新時の Velopack callback 経由）。Windows ログイン時にこの引数付きで起動し、`SimpleWebSource("https://totd.kagayoi.com")`（= Cloudflare R2）から更新を取得・適用する。**チェック (30秒) とダウンロード (10分) は別々の `CancellationTokenSource`** を持つ（無応答ネットでの常駐を防ぎつつ、低速回線の正常 DL を打ち切らない）。例外は全て握り潰し（サイレント用途）、`Debug.WriteLine` のみ（Release/AOT では除去）。
 
 ### ディスプレイ OFF の仕組み
 `MainWindowViewModel` が `DispatcherTimer` で 5秒カウントダウンし、0 で注入された「OFF して閉じる」コールバックを呼ぶ。実体は `MainWindow.TurnOffDisplayAndClose()` が自ウィンドウハンドルへ `WM_SYSCOMMAND` / `SC_MONITORPOWER` を `SendMessage` する **唯一残した P/Invoke**（Avalonia にモニタ電源 API が無いため正当）。ESC / キャンセルは `MainWindow.xaml` の `<Window.KeyBindings>` と Button が `CancelCommand` を叩く（入力処理はコードビハインドに持たず XAML 側で完結）。最小化/最大化ボタンの抑止は `CanMinimize="False"` + `CanResize="False"` で行う（Win32 ハックは使わない）。
@@ -58,7 +58,7 @@ View が VM コンストラクタに **2 つの `Action`（OFF+close / close の
 `PublishAot=true`。リフレクション依存・動的コード生成・未注釈のトリミング非互換コードは入れない（AOT/トリムを壊すため）。サイズ削減 feature switch は csproj に集約（`UseSystemResourceKeys` / `EventSourceSupport=false` / `HttpActivityPropagationSupport=false`、Release のみ `DebuggerSupport=false`）。`InvariantGlobalization` は **意図的に未設定**（Windows AOT では ICU 非同梱で削減僅少な一方、Velopack 更新処理のカルチャ安全性に影響し得るため）。`TrimmerRoots.xml` は自アセンブリを `preserve="all"`（XAML 反射ロード救済）。
 
 ### 配信インフラ（2 系統・互いに独立）
-- **アプリ更新**: Velopack → R2 バケット `totd-updates`、カスタムドメイン `totd.nephilim.jp`。配信は `release-local.ps1`（R2 upload + manifest 外の旧 `*.nupkg` を自動 cleanup）。
+- **アプリ更新**: Velopack → R2 バケット `totd-updates`、カスタムドメイン `totd.kagayoi.com`。配信は `release-local.ps1`（R2 upload + manifest 外の旧 `*.nupkg` を自動 cleanup）。
 - **ランディングページ**: `web/` は同一ホスト名に被せる Cloudflare Worker (`totd-landing`)。`worker.js` が `/` と `/index.html` だけバンドル HTML を返し、**それ以外のパス（更新ファイル）は `fetch(request)` で R2 へ無加工委譲**する（Worker Route は同ゾーン fetch の対象外＝再帰しない）。`web/**` push 時に `deploy-landing.yml` がデプロイ。更新配信とは無関係。
 
 ## CI（`.github/workflows/`）

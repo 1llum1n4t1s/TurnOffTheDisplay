@@ -1,5 +1,5 @@
 # ディスプレイ＠OFF ランディングページ配信 Worker。
-# totd.nephilim.jp は R2 バケット totd-updates のカスタムドメイン。
+# totd.kagayoi.com は R2 バケット totd-updates のカスタムドメイン。
 # 下のルートを被せると Worker が Custom Domain より優先され、worker.js が
 # "/" のみランディングページを返し、それ以外のパスは R2 にそのまま委譲する。
 name = "totd-landing"
@@ -7,6 +7,7 @@ main = "worker.js"
 compatibility_date = "2026-05-01"
 
 routes = [
+  { pattern = "totd.kagayoi.com/*", zone_name = "kagayoi.com" },
   { pattern = "totd.nephilim.jp/*", zone_name = "nephilim.jp" },
 ]
 

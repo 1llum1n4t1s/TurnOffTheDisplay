@@ -1,4 +1,4 @@
-// nephilim.jp サブドメインのランディングページ配信 Worker。
+// kagayoi.com サブドメインのランディングページ配信 Worker。
 //
 // このホスト名は R2 バケットのカスタムドメインでもある（Velopack 自動更新ファイルの配信元）。
 // Cloudflare では「同一ホスト名に張った Worker Route は Custom Domain より優先」される。
@@ -10,7 +10,7 @@
 // 更新ファイル (*.nupkg / releases.*.json / *-Setup.exe 等) は R2 がネイティブ配信する
 // （Range / 条件付きリクエスト / キャッシュ / Content-Type をそのまま維持）。
 //
-// 対象ホスト: totd.nephilim.jp  (ディスプレイ＠OFF / TurnOffTheDisplay)
+// 対象ホスト: totd.kagayoi.com  (ディスプレイ＠OFF / TurnOffTheDisplay)
 import landingHtml from "./index.html";
 
 export default {
