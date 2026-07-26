@@ -69,3 +69,12 @@ View が VM コンストラクタに **2 つの `Action`（OFF+close / close の
 ## 注意点
 - 日本語コメント/文字列を含む PowerShell スクリプトは **UTF-8 BOM 付き**で保存する（PSScriptAnalyzer `PSUseBOMForUnicodeEncodedFile`。BOM 無しだと Windows PowerShell 5.1 が Shift-JIS と誤認して文字化けする）。
 - `vpk`（Velopack CLI）はリリース時に NuGet の最新安定版へ解決する（ハードコード固定はしない）。`wrangler` はサプライチェーン対策でバージョン固定する。
+
+## ドメイン移行（2026-07 開始・期限 2027/05/31）
+
+屋号を **Kagayoi** に統一したため、配信ドメインを `nephilim.jp` から `kagayoi.com` へ移行中。方針の全体像はユーザーグローバルの `CLAUDE.md` §屋号とドメイン を参照する。
+
+- **旧ドメイン `nephilim.jp` はレジストラで廃止申請済みで 2027/05/31 に失効する**（延長しない）。それまでに出荷済みバイナリを新ドメインへ移行しきる。
+- 旧ホストの Worker route / custom domain は**期限まで消さない**。消すと出荷済みアプリの自動更新が止まる。
+- `nephilim.jp` の Redirect Rules は `/` だけを 301 する。`releases.*.json` / `*.nupkg` / `*-Setup.exe` は転送せず R2 が配信を続ける。
+- 配信は `totd.kagayoi.com`（R2 `totd-updates`）。旧 `totd.nephilim.jp` は route に併記して残してある。
