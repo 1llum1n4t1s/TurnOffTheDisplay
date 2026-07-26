@@ -11,10 +11,10 @@ jobs:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     steps:
       - name: リポジトリをチェックアウト
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: .NET SDK をセットアップ
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
@@ -29,7 +29,7 @@ jobs:
         continue-on-error: true
 
       - name: テスト結果をアップロード
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-results-Release
@@ -37,7 +37,7 @@ jobs:
           retention-days: 3
 
       - name: ビルド成果物をアップロード
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-artifacts-release
           path: |
