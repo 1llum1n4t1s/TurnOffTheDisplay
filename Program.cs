@@ -1,4 +1,5 @@
 using Avalonia;
+using System.Runtime.InteropServices;
 using Velopack;
 
 namespace TurnOffTheDisplay;
@@ -9,11 +10,12 @@ namespace TurnOffTheDisplay;
 internal class Program
 {
     internal const string UpdateCheckArg = "--update-check";
+    private const string AppUserModelId = "velopack.TurnOffTheDisplay";
 
     /// <summary>
-    /// 自動更新の配信元ベース URL (Cloudflare R2 totd-updates / カスタムドメイン totd.nephilim.jp)
+    /// 自動更新の配信元ベース URL (Cloudflare R2 totd-updates / カスタムドメイン totd.kagayoi.com)
     /// </summary>
-    internal const string UpdateBaseUrl = "https://totd.nephilim.jp";
+    internal const string UpdateBaseUrl = "https://totd.kagayoi.com";
 
     /// <summary>
     /// 更新チェック (マニフェスト取得) のタイムアウト。無応答ネットワークでのゴーストプロセス常駐を素早く防ぐ
@@ -33,6 +35,8 @@ internal class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        TrySetCurrentProcessAppUserModelId();
+
         VelopackApp.Build()
             .OnAfterInstallFastCallback(v =>
             {
@@ -59,6 +63,15 @@ internal class Program
 
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
+
+    private static void TrySetCurrentProcessAppUserModelId()
+    {
+        try { _ = SetCurrentProcessExplicitAppUserModelID(AppUserModelId); }
+        catch { /* シェル連携の失敗だけで起動を止めない */ }
+    }
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    private static extern int SetCurrentProcessExplicitAppUserModelID(string appId);
 
     /// <summary>
     /// UI なしでサイレント更新チェックを実行する。
