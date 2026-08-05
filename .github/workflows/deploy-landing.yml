@@ -34,7 +34,7 @@ jobs:
           node-version: '22'
 
       - name: wrangler CLI をインストール (サプライチェーン対策でバージョン固定)
-        run: npm install -g wrangler@4.114.0
+        run: npm install -g wrangler@4.119.0
 
       # CLOUDFLARE_API_TOKEN は Workers Scripts:Edit 権限が必要
       # (r2-upload で使う R2 Storage:Edit だけでは Worker デプロイ不可)。
