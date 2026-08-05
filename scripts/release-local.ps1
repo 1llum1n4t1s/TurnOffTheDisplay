@@ -143,7 +143,7 @@ foreach ($runtime in $Runtimes) {
             --packId TurnOffTheDisplay `
             --packVersion $version `
             --packTitle 'ディスプレイ＠OFF' `
-            --packAuthors 'ゆろち' `
+            --packAuthors 'Kagayoi' `
             --mainExe TurnOffTheDisplay.exe `
             --icon (Join-Path 'icon' 'app.ico') `
             --packDir $publishDir `

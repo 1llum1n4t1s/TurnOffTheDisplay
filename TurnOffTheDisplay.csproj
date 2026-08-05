@@ -8,7 +8,7 @@
         <LangVersion>default</LangVersion>
         <!-- バージョンは Directory.Build.props の <Version> で一元管理 (継承)。 -->
         <Title>ディスプレイ＠OFF</Title>
-        <Authors>ゆろち</Authors>
+        <Authors>Kagayoi</Authors>
         <Description>ディスプレイをスタンバイモードに移行するソフトです。
 電源プランのディスプレイの電源を切る時と同じ動作を実行します。
 席を外す際や、PCを起動させたままでディスプレイをスタンバイモードに移行させたい場合などにお使いください。</Description>
@@ -17,9 +17,9 @@
         <ApplicationIcon>icon\app.ico</ApplicationIcon>
         <AssemblyTitle>ディスプレイ＠OFF</AssemblyTitle>
         <AssemblyDescription>ディスプレイをスタンバイモードに移行するソフト</AssemblyDescription>
-        <AssemblyCompany>ゆろち</AssemblyCompany>
+        <Company>Kagayoi</Company>
         <AssemblyProduct>ディスプレイ＠OFF</AssemblyProduct>
-        <AssemblyCopyright>Copyright © 2025 ゆろち</AssemblyCopyright>
+        <Copyright>Copyright © 2025 Kagayoi</Copyright>
         <PackageIcon>app_icon.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <RepositoryUrl>https://github.com/1llum1n4t1s/TurnOffTheDisplay</RepositoryUrl>
