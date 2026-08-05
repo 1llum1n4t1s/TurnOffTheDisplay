@@ -55,7 +55,7 @@ View が VM コンストラクタに **2 つの `Action`（OFF+close / close の
 バージョンは **`Directory.Build.props` の `<Version>` のみ**で定義し、`csproj` はこれを継承する（csproj に `<Version>` リテラルは持たせない）。`release-local.ps1` も XPath で props から読む。バージョン変更は `/vava` 経由のみ — コード修正のついでに書き換えない。
 
 ### Native AOT 制約
-`PublishAot=true`。リフレクション依存・動的コード生成・未注釈のトリミング非互換コードは入れない（AOT/トリムを壊すため）。サイズ削減 feature switch は csproj に集約（`UseSystemResourceKeys` / `EventSourceSupport=false` / `HttpActivityPropagationSupport=false`、Release のみ `DebuggerSupport=false`）。`InvariantGlobalization` は **意図的に未設定**（Windows AOT では ICU 非同梱で削減僅少な一方、Velopack 更新処理のカルチャ安全性に影響し得るため）。`TrimmerRoots.xml` は自アセンブリを `preserve="all"`（XAML 反射ロード救済）。
+`PublishAot=true`。リフレクション依存・動的コード生成・未注釈のトリミング非互換コードは入れない（AOT/トリムを壊すため）。サイズ削減 feature switch は csproj に集約（`UseSystemResourceKeys` / `EventSourceSupport=false` / `HttpActivityPropagationSupport=false`、Release のみ `DebuggerSupport=false`）。`InvariantGlobalization` は **意図的に未設定**（Windows AOT では ICU 非同梱で削減僅少な一方、Velopack 更新処理のカルチャ安全性に影響し得るため）。トリマー root 記述子は**置かない** — XAML は `AvaloniaUseCompiledBindingsByDefault` と明示 `AvaloniaResource` で解決しており、自アセンブリを `preserve="all"` で丸ごと残すとサイズ削減方針に逆行するため。
 
 ### 配信インフラ（2 系統・互いに独立）
 - **アプリ更新**: Velopack → R2 バケット `totd-updates`、カスタムドメイン `totd.kagayoi.com`。配信は `release-local.ps1`（R2 upload + manifest 外の旧 `*.nupkg` を自動 cleanup）。

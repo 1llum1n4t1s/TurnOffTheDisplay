@@ -47,9 +47,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
     /// </summary>
     private void CountdownTimer_Tick(object? sender, EventArgs e)
     {
+        // 先に減算する。0 を 1 秒表示してから次の Tick で OFF すると
+        // 実測が CountdownSeconds + 1 秒になり「5秒カウントダウン」の契約とずれるため。
+        _count--;
+
         if (_count > 0)
         {
-            _count--;
             CountText = _count.ToString();
         }
         else
