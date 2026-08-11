@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- 全プロジェクト共通の唯一のバージョン定義。ここだけ更新すれば csproj は継承する (/vava もこの 1 行を更新)。 -->
-    <Version>2.0.34</Version>
+    <Version>2.0.35</Version>
     <!-- 警告をエラー扱いにして品質ゲートを他リポジトリと揃える。 -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- NuGet 依存のサプライチェーン保護: lockfile (packages.lock.json) を生成・検証する。 -->
