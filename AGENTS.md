@@ -59,11 +59,11 @@ View が VM コンストラクタに **2 つの `Action`（OFF+close / close の
 
 ### 配信インフラ（2 系統・互いに独立）
 - **アプリ更新**: Velopack → R2 バケット `totd-updates`、カスタムドメイン `totd.kagayoi.com`。配信は `release-local.ps1`（R2 upload + manifest 外の旧 `*.nupkg` を自動 cleanup）。
-- **ランディングページ**: `web/` は同一ホスト名に被せる Cloudflare Worker (`totd-landing`)。`worker.js` が `/` と `/index.html` だけバンドル HTML を返し、**それ以外のパス（更新ファイル）は `fetch(request)` で R2 へ無加工委譲**する（Worker Route は同ゾーン fetch の対象外＝再帰しない）。`web/**` push 時に `deploy-landing.yml` がデプロイ。更新配信とは無関係。
+- 製品ページの配信は `vps-web/deploy/deploy-lp.ps1` を使う。公開ホスト・更新ファイルの既存経路を維持する。
 
 ## CI（`.github/workflows/`）
 - `dotnet-build.yml`: 非 release ブランチ / PR で build + test（テストプロジェクト無しのため `continue-on-error`）。配信はしない。
-- `deploy-landing.yml`: `web/**` push でランディング Worker をデプロイ。
+- 製品ページの配信は `vps-web/deploy/deploy-lp.ps1` を使う。公開ホスト・更新ファイルの既存経路を維持する。
 - リリース用 CI は無い（ローカル署名スクリプトに置換済み）。
 
 ## 注意点

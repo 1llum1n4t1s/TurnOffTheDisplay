@@ -5,5 +5,4 @@
 *.suo
 bin/
 obj/
-.serena/
 local-release/
