@@ -1,6 +1,10 @@
+permissions:
+  contents: read
+
 name: .NET ビルド
 
 on:
+  workflow_dispatch:
   push:
   pull_request:
 
@@ -26,8 +30,6 @@ jobs:
 
       - name: テスト実行
         run: dotnet test TurnOffTheDisplay.slnx --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
-        continue-on-error: true
-
       - name: テスト結果をアップロード
         uses: actions/upload-artifact@v7
         if: always()
