@@ -1,4 +1,4 @@
-﻿# release-local.ps1 — ローカル署名付き Velopack リリース
+# release-local.ps1 — ローカル署名付き Velopack リリース
 #
 # SimplySign (Certum クラウド署名) は Desktop 接続 + スマホトークンが必要で
 # GitHub Actions からは署名できないため、リリースは本スクリプトでローカル実行する。
@@ -19,6 +19,35 @@ param(
     [switch]$SkipUpload,
     [string[]]$Runtimes = @('win-x64')
 )
+
+
+# 検証済みの作業対象だけを標準APIで削除する。
+function Remove-LocalWorkItem {
+    param([string[]]$LiteralPath, [string]$AllowedRoot, [switch]$IgnoreMissing, [switch]$AllowLeafJunction)
+    if ([string]::IsNullOrWhiteSpace($AllowedRoot) -or -not [IO.Path]::IsPathRooted($AllowedRoot)) { throw 'Cleanup root must be absolute.' }
+    $boundary = [IO.Path]::GetFullPath($AllowedRoot).TrimEnd('\','/') + [IO.Path]::DirectorySeparatorChar
+    foreach ($target in $LiteralPath) {
+        if ([string]::IsNullOrWhiteSpace($target) -or -not [IO.Path]::IsPathRooted($target)) { throw 'Cleanup target must be absolute.' }
+        $resolved = [IO.Path]::GetFullPath($target)
+        if (-not $resolved.StartsWith($boundary, [StringComparison]::OrdinalIgnoreCase)) { throw 'Cleanup target is outside the allowed root.' }
+        $ancestor = $resolved
+        while ($ancestor) {
+            if (Test-Path -LiteralPath $ancestor) {
+                $item = Get-Item -LiteralPath $ancestor -Force -ErrorAction Stop
+                if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -and -not ($AllowLeafJunction -and $ancestor -eq $resolved -and $item.LinkType -eq 'Junction')) { throw 'Cleanup path contains a reparse point.' }
+            }
+            $ancestor = Split-Path $ancestor -Parent
+        }
+        if (-not (Test-Path -LiteralPath $resolved)) { if ($IgnoreMissing) { continue }; throw "Cleanup target is missing: $resolved" }
+        $item = Get-Item -LiteralPath $resolved -Force -ErrorAction Stop
+        $leafLink = [bool]($item.Attributes -band [IO.FileAttributes]::ReparsePoint)
+        if ($item.PSIsContainer -and -not $leafLink) {
+            if (@(Get-ChildItem -LiteralPath $resolved -Recurse -Force -ErrorAction Stop | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }).Count) { throw 'Cleanup directory contains a reparse point.' }
+        }
+        Remove-Item -LiteralPath $resolved -Recurse:($item.PSIsContainer -and -not $leafLink) -Force -ErrorAction Stop
+        if (Test-Path -LiteralPath $resolved) { throw "Cleanup target remains: $resolved" }
+    }
+}
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -102,7 +131,7 @@ if (-not $SkipUpload) {
     $env:CLOUDFLARE_ACCOUNT_ID = $AccountId
 }
 
-if (Test-Path $WorkDir) { Remove-Item $WorkDir -Recurse -Force }
+if (Test-Path $WorkDir) {  Remove-LocalWorkItem -LiteralPath ($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($WorkDir)) -AllowedRoot $RepoRoot }
 New-Item -ItemType Directory -Path $ArtifactsDir -Force | Out-Null
 
 # ---- 1. ビルド + 署名付きパッケージング (RID ごと) ----
