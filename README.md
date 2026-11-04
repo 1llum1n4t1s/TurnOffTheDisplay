@@ -96,3 +96,7 @@ Windows の「設定」→「アプリ」→「インストールされている
 Copyright (c) 2008-2026 ゆろち
 
 詳細は [LICENSE](LICENSE) ファイルをご参照ください。
+
+## R2 配布
+
+R2 への配布は PowerShell 7.2 以上と同梱 `scripts/R2Distribution.Common.ps1` を使用します。Node.js・pnpm・Wrangler は不要です。既存の Cloudflare API token を使用し、固定 URL は再検証、不変の版付き成果物は1年間キャッシュします。

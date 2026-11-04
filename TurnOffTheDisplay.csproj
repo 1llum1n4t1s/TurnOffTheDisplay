@@ -55,6 +55,8 @@
 
     <ItemGroup>
       <None Remove=".gitignore" />
+      <Compile Remove="scripts\R2Transfer.Core.cs" />
+      <Compile Remove="tests\R2Transfer\*.cs" />
       <None Remove="LICENSE" />
     </ItemGroup>
 

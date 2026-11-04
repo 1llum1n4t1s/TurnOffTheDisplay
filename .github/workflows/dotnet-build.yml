@@ -17,6 +17,10 @@ jobs:
       - name: リポジトリをチェックアウト
         uses: actions/checkout@v7
 
+      - name: Verify R2 transfer fixtures
+        shell: pwsh
+        run: |
+          & (Join-Path $env:GITHUB_WORKSPACE 'tests/R2Transfer/Run.ps1') -WorkRoot (Join-Path $env:RUNNER_TEMP 'r2-transfer-check')
       - name: .NET SDK をセットアップ
         uses: actions/setup-dotnet@v6
         with:

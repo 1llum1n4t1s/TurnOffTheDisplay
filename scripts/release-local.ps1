@@ -1,4 +1,4 @@
-# release-local.ps1 — ローカル署名付き Velopack リリース
+﻿# release-local.ps1 — ローカル署名付き Velopack リリース
 #
 # SimplySign (Certum クラウド署名) は Desktop 接続 + スマホトークンが必要で
 # GitHub Actions からは署名できないため、リリースは本スクリプトでローカル実行する。
@@ -49,6 +49,24 @@ function Remove-LocalWorkItem {
     }
 }
 
+# R2 への書込みは同梱の PowerShell/.NET 実装で行う。
+. (Join-Path $PSScriptRoot 'R2Distribution.Common.ps1')
+
+function Send-ReleaseR2Object {
+    param([Parameter(Mandatory)][System.IO.FileInfo]$File)
+    # バージョン付き成果物は不変、固定 URL とメタデータは毎回再検証する。
+    $immutable = $File.Extension -eq '.nupkg' -or $File.Name -match '\d+\.\d+\.\d+'
+    $cacheControl = if ($immutable) { 'public, max-age=31536000, immutable' } else { 'no-cache, must-revalidate' }
+    $contentType = switch ($File.Extension.ToLowerInvariant()) {
+        '.json' { 'application/json'; break }
+        '.exe' { 'application/vnd.microsoft.portable-executable'; break }
+        '.zip' { 'application/zip'; break }
+        default { if ($File.Name -like 'RELEASES*') { 'text/plain; charset=utf-8' } else { 'application/octet-stream' } }
+    }
+    $null = Publish-R2Object -AccountId $AccountId -Bucket $Bucket -FilePath $File.FullName `
+        -ApiToken $env:CLOUDFLARE_API_TOKEN -ContentType $contentType -CacheControl $cacheControl -Immutable:$immutable
+}
+
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
@@ -58,7 +76,6 @@ $VpkVersion = (Invoke-RestMethod 'https://api.nuget.org/v3-flatcontainer/vpk/ind
     Where-Object { $_ -notmatch '-' } | Select-Object -Last 1
 if (-not $VpkVersion) { throw 'vpk の最新安定版バージョンの取得に失敗しました (NuGet API)' }
 Write-Host "vpk 最新安定版: $VpkVersion"
-$WranglerVersion = '4.144.0'         # サプライチェーン対策でバージョン固定
 $Bucket = 'totd-updates'
 $BaseUrl = 'https://totd.kagayoi.com'
 $AccountId = '10901bfadbf1005164774a7350082985'
@@ -205,11 +222,9 @@ if ($SkipUpload) {
 # - *.nupkg は put のみ (過去版は cleanup ステップが manifest 基準で削除)
 Write-Host '== R2 アップロード ==' -ForegroundColor Cyan
 $uploaded = 0
-foreach ($f in Get-ChildItem $ArtifactsDir -File) {
+foreach ($f in @(Get-ChildItem $ArtifactsDir -File | Sort-Object @{ Expression = { if ($_.Name -like 'releases.*.json') { 3 } elseif ($_.Name -like 'RELEASES*') { 2 } elseif ($_.Name -like 'assets.*.json') { 1 } else { 0 } } }, Name)) {
     Write-Host "  ↑ $($f.Name)"
-    Invoke-Native "R2 put ($($f.Name))" {
-        pnpm dlx "wrangler@$WranglerVersion" r2 object put "$Bucket/$($f.Name)" --file $f.FullName --remote
-    }
+    Send-ReleaseR2Object -File $f
     $uploaded++
 }
 Write-Host "✅ R2 アップロード完了: $uploaded ファイル"

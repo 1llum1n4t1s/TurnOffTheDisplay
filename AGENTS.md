@@ -68,7 +68,7 @@ View が VM コンストラクタに **2 つの `Action`（OFF+close / close の
 
 ## 注意点
 - 日本語コメント/文字列を含む PowerShell スクリプトは **UTF-8 BOM 付き**で保存する（PSScriptAnalyzer `PSUseBOMForUnicodeEncodedFile`。BOM 無しだと Windows PowerShell 5.1 が Shift-JIS と誤認して文字化けする）。
-- `vpk`（Velopack CLI）はリリース時に NuGet の最新安定版へ解決する（ハードコード固定はしない）。`wrangler` はサプライチェーン対策でバージョン固定する。
+- `vpk`（Velopack CLI）はリリース時に NuGet の最新安定版へ解決する（ハードコード固定はしない）。R2 配布は同梱 `scripts/R2Distribution.Common.ps1`（PowerShell 7.2 以上 / .NET）を使用し、Node.js・pnpm・Wrangler は不要。
 
 ## ドメイン移行（2026-07 開始・期限 2027/05/31）
 
