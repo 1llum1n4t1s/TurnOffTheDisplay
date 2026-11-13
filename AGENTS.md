@@ -26,14 +26,14 @@ export PATH="/c/Program Files (x86)/Microsoft Visual Studio/Installer:$PATH"
 
 ## リリース
 
-リリースは **CI ではなくローカルスクリプト**で行う（Certum/SimplySign のクラウド署名が Desktop 接続 + スマホトークンを要し CI から署名できないため。旧 `velopack-release.yml` は廃止済み）。
+リリースは GitHub Actions の `.github/workflows/release.yml`（手動起動・Environment `release`）で行う。署名は [Sigilune](https://github.com/1llum1n4t1s/Sigilune)（Certum SimplySign のクラウド鍵を signtool `/dlib` で使う CLI。SimplySign Desktop・手入力コード不要）で、ワークフローは `scripts/release-local.ps1` を実行するためローカル実行と同じ手順になる。/vava で版を上げて push した後、`gh workflow run release.yml --ref <ブランチ>` で起動し `gh run watch` で完了を確認する（`-f skip_upload=true` は配信せず署名済み成果物だけを Actions に残す）。ローカル実行は検証・再開に使う。
 
 ```bash
 pwsh -NoProfile -File scripts/release-local.ps1               # フル (build+署名+R2 upload+旧 nupkg cleanup)
 pwsh -NoProfile -File scripts/release-local.ps1 -SkipUpload   # build+署名のみ (動作確認)
 ```
 
-前提: SimplySign Desktop 接続済み（証明書が `Cert:\CurrentUser\My` に見える）/ `Directory.Build.props` の `<Version>` が目的版（`/vava` 済み）/ `C:\Users\IMT\dev\Secret\secrets.json` に `cloudflare.api_token`。正規ルートは **`/vava` スキル**（バージョン bump → release ブランチ → ローカル署名リリース連携）。
+前提: Sigilune を使えること（共通関数 `scripts/Sigilune.Common.ps1`。実行ファイルは `SIGILUNE_EXE` → PATH → `%USERPROFILE%\.local\Sigilune\bin\sigilune.exe`。ローカルは `sigilune setup` 済み、CI は Secrets `SIGILUNE_EMAIL` / `SIGILUNE_TOTP_URI`）/ `Directory.Build.props` の `<Version>` が目的版（`/vava` 済み）/ 環境変数 `CLOUDFLARE_API_TOKEN`（CI の Secret）、無ければ `C:\Users\IMT\dev\Secret\secrets.json` の `cloudflare.api_token`。Velopack は `--signTemplate "<sigilune> sign {{file}}"` で署名し、Sigilune が署名後に有効性・署名者・タイムスタンプを検証する。正規ルートは **`/vava` スキル**（バージョン bump → release ブランチ → リリース連携）。
 
 ## アーキテクチャ
 
@@ -64,7 +64,7 @@ View が VM コンストラクタに **2 つの `Action`（OFF+close / close の
 ## CI（`.github/workflows/`）
 - `dotnet-build.yml`: 非 release ブランチ / PR で build + test（テストプロジェクト無しのため `continue-on-error`）。配信はしない。
 - 製品ページの配信は `vps-web/deploy/deploy-lp.ps1` を使う。公開ホスト・更新ファイルの既存経路を維持する。
-- リリース用 CI は無い（ローカル署名スクリプトに置換済み）。
+- `release.yml`: 手動起動のみ（push / tag では動かない）。Environment `release` の Secrets（`SIGILUNE_EMAIL` / `SIGILUNE_TOTP_URI` / `CLOUDFLARE_API_TOKEN`）を読む唯一のワークフローで、`scripts/release-local.ps1` を実行して署名・R2 配信する。終了時に `sigilune logout` する。
 
 ## 注意点
 - 日本語コメント/文字列を含む PowerShell スクリプトは **UTF-8 BOM 付き**で保存する（PSScriptAnalyzer `PSUseBOMForUnicodeEncodedFile`。BOM 無しだと Windows PowerShell 5.1 が Shift-JIS と誤認して文字化けする）。
@@ -81,9 +81,10 @@ View が VM コンストラクタに **2 つの `Action`（OFF+close / close の
 
 ### ローカルリリースの実行
 
-リポジトリルートで事前確認を行い、失敗時は「署名証明書が見つからないよ。SimplySign Desktop を起動してトークンでログインしてから /vava を再実行してね」。公開依頼時に成功を確認してから実行する。
+通常は上記の `release.yml` を使う。ローカルで実行する場合は、リポジトリルートで Sigilune のクラウドログインを事前確認し、成功した場合だけ実行する（`release-local.ps1` もビルド前に同じ確認を行う）。失敗時は `sigilune status` で登録を確認するよう案内し、ログインを自動再試行せず、署名を省略して続行しない。
 
 ```powershell
-pwsh -NoProfile -Command 'if (-not (Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -like "CN=Open Source Developer Yuichiro Shinozaki*" -and $_.NotAfter -gt (Get-Date) })) { exit 1 }'
-if ($LASTEXITCODE -eq 0) { pwsh -NoProfile -File scripts/release-local.ps1 } else { throw '署名証明書が見つからないよ。SimplySign Desktop を起動してトークンでログインしてから /vava を再実行してね' }
+$sigilune = if ($env:SIGILUNE_EXE) { $env:SIGILUNE_EXE } else { Join-Path $env:USERPROFILE '.local\Sigilune\bin\sigilune.exe' }
+& $sigilune login
+if ($LASTEXITCODE -eq 0) { pwsh -NoProfile -File scripts/release-local.ps1 } else { throw 'Sigilune でクラウドにログインできなかったよ。sigilune status で登録を確認してから /vava を再実行してね' }
 ```
