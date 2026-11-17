@@ -236,7 +236,7 @@ Write-Host "✅ R2 アップロード完了: $uploaded ファイル"
 # 固定名ファイル (Setup.exe / Portable.zip / RELEASES / releases.*.json / assets.*.json) は
 # 毎リリースで中身が変わるのに URL が不変。CDN エッジが旧版を Cache-Control の max-age 分保持するため、
 # パージしないと新規ダウンロード・自動更新が旧バージョンを掴む。アップロード直後に該当 URL をパージして
-# 伝播を確定する。バージョン付き nupkg は URL が一意 (旧キャッシュなし) のためパージ不要。
+# キャッシュ削除を要求する。バージョン付き nupkg は URL が一意 (旧キャッシュなし) のためパージ不要。
 Write-Host '== Cloudflare キャッシュパージ ==' -ForegroundColor Cyan
 $cfHeaders = @{ Authorization = "Bearer $($env:CLOUDFLARE_API_TOKEN)" }
 $zoneName = ([uri]$BaseUrl).Host -replace '^[^.]+\.', ''   # <sub>.kagayoi.com → kagayoi.com (apex)
@@ -255,16 +255,7 @@ if ($purgeUrls.Count -gt 0) {
     Write-Host '  パージ対象なし'
 }
 
-# ---- 3. 配信確認 (CDN/edge 伝播チェック) ----
-Write-Host '== 配信確認 ==' -ForegroundColor Cyan
-foreach ($runtime in $Runtimes) {
-    $channel = $RuntimeMatrix[$runtime].Channel
-    $url = "$BaseUrl/releases.$channel.json"
-    $resp = Invoke-WebRequest -Uri $url -TimeoutSec 30 -MaximumRetryCount 3 -RetryIntervalSec 5
-    Write-Host "  $url → HTTP $($resp.StatusCode) ($($resp.RawContentLength) bytes)"
-}
-
-# ---- 4. 旧バージョン nupkg のクリーンアップ (Aggressive 戦略) ----
+# ---- 3. 旧バージョン nupkg のクリーンアップ (Aggressive 戦略) ----
 # ローカル artifacts の manifest (= 今アップロードしたものと同一) から keep set を作り、
 # R2 上の「.nupkg かつ manifest 外」だけを削除する。固定ファイル名 (Setup.exe /
 # Portable.zip / RELEASES* / assets.*.json / releases.*.json) は対象外なので安全。
