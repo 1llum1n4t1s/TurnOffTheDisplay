@@ -32,7 +32,7 @@ Windows の電源プランにある「ディスプレイの電源を切る」と
 3. 例外は全て握り潰す（Debug 出力のみ）。未インストール（開発実行）では何もしない。
 
 ### リリース
-`Directory.Build.props` の `<Version>` → `scripts/release-local.ps1`（`dotnet publish -r win-x64` → `vpk pack`、署名は Sigilune → R2 へ upload、manifest 外の旧 nupkg を削除）。`release.yml` が同スクリプトを Environment `release` のシークレットで実行する。`dotnet-build.yml` は release 以外のブランチで検証だけを行い、配信しない。
+`Directory.Build.props` の `<Version>` → `scripts/release-local.ps1`（`dotnet publish -r win-x64` → `vpk pack`、署名は Sigilune → R2 へ upload → 固定名ファイルの Cloudflare キャッシュパージを要求 → manifest 外の旧 nupkg を削除）。`release/**` の push で起動する `release.yml` は、先に `verify` ジョブ（`dotnet-build.yml` を `workflow_call` で実行）が通った場合だけ、同スクリプトを Environment `release` のシークレットで実行する。`dotnet-build.yml` は release 以外のブランチ / PR で同じ検証（R2 転送ヘルパーの検査と Release ビルド）だけを行い、配信しない。
 
 ## 不変条件
 
