@@ -8,44 +8,40 @@ concurrency:
 
 name: .NET ビルド
 
+# release/** の push は release.yml が同じ検証をこのワークフローの workflow_call で先に走らせるため、
+# ここでは release/** を除いて二重実行を避ける。
 on:
   workflow_dispatch:
+  workflow_call:
   push:
+    branches-ignore:
+      - 'release/**'
   pull_request:
 
 jobs:
   build:
     name: .NET ビルド
     runs-on: windows-latest
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     steps:
       - name: リポジトリをチェックアウト
         uses: actions/checkout@v7
 
-      - name: Verify R2 transfer fixtures
+      # テストプロジェクトは存在しない。実在する検証は R2 転送ヘルパーの fixture 検査 (Run.ps1) とビルド (警告はエラー)。
+      - name: R2 転送ヘルパーの検証
         shell: pwsh
         run: |
           & (Join-Path $env:GITHUB_WORKSPACE 'tests/R2Transfer/Run.ps1') -WorkRoot (Join-Path $env:RUNNER_TEMP 'r2-transfer-check')
+
       - name: .NET SDK をセットアップ
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
 
       - name: 依存関係を復元
         run: dotnet restore TurnOffTheDisplay.slnx
 
       - name: ビルド
         run: dotnet build TurnOffTheDisplay.slnx --configuration Release --no-restore
-
-      - name: テスト実行
-        run: dotnet test TurnOffTheDisplay.slnx --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
-      - name: テスト結果をアップロード
-        uses: actions/upload-artifact@v7
-        if: always()
-        with:
-          name: test-results-Release
-          path: '**/TestResults/*.trx'
-          retention-days: 3
 
       - name: ビルド成果物をアップロード
         uses: actions/upload-artifact@v7

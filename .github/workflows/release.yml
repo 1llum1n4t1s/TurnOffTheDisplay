@@ -29,7 +29,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # 配信前の検証 (R2 転送ヘルパーの検査とビルド)。失敗したら署名・配信へ進まない。
+  verify:
+    name: 配信前の検証
+    uses: ./.github/workflows/dotnet-build.yml
+
   release:
+    needs: verify
     runs-on: windows-latest
     timeout-minutes: 60
     environment: release
@@ -48,7 +54,7 @@ jobs:
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73
         with:
           # global.json が無いため、PR ビルド (dotnet-build.yml) と同じ SDK 系列を指定する。
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
 
       - name: Sigilune を導入
         uses: 1llum1n4t1s/Sigilune@05006dcad019e5e863a08985b9208d72004f1b5f # v1.1.3
