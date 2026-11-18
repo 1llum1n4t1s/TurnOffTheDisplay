@@ -4,18 +4,17 @@ permissions:
 # 同じ ref の古い検証 run は新しい push で取り消す。
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
 
 name: .NET ビルド
 
-# release/** の push は release.yml が同じ検証をこのワークフローの workflow_call で先に走らせるため、
-# ここでは release/** を除いて二重実行を避ける。
+# 版タグの push は release.yml が同じ検証をこのワークフローの workflow_call で先に走らせる。
+# ここでの push はブランチだけ (タグでは起動しない) なので二重実行にならない。
 on:
   workflow_dispatch:
   workflow_call:
   push:
-    branches-ignore:
-      - 'release/**'
+    branches: ['**']
   pull_request:
 
 jobs:

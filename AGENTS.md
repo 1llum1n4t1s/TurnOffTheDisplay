@@ -26,14 +26,14 @@ export PATH="/c/Program Files (x86)/Microsoft Visual Studio/Installer:$PATH"
 
 ## リリース
 
-リリースは GitHub Actions の `.github/workflows/release.yml`（`release/**` の push で起動、再実行だけ手動起動・Environment `release`）で行う。署名は [Sigilune](https://github.com/1llum1n4t1s/Sigilune)（Certum SimplySign のクラウド鍵を signtool `/dlib` で使う CLI。SimplySign Desktop・手入力コード不要）で、ワークフローは `scripts/release-local.ps1` を実行するためローカル実行と同じ手順になる。/vava で版を上げて release ブランチを push すると起動する（同じブランチの再実行は `gh workflow run release.yml --ref <ブランチ>`）。完了は `vigilia watch HEAD` で確認する（REST枠を使わずGraphQLで取得し、同じ対象は全セッションでキャッシュ共有されるため複数セッションが同時に見てよい。`-f skip_upload=true` は配信せず署名済み成果物だけを Actions に残す）。ローカル実行は検証・再開に使う。
+リリースは GitHub Actions の `.github/workflows/release.yml`（main の commit に付けた軽量タグ `v<版>` の push で起動、再実行だけ手動起動・Environment `release`）で行う。署名は [Sigilune](https://github.com/1llum1n4t1s/Sigilune)（Certum SimplySign のクラウド鍵を signtool `/dlib` で使う CLI。SimplySign Desktop・手入力コード不要）で、ワークフローは `scripts/release-local.ps1` を実行するためローカル実行と同じ手順になる。/vava で版を上げて main を push し、その commit に軽量タグ `v<版>` を付けて push すると起動する（同じタグの再実行は `gh workflow run release.yml --ref v<版>`。GitHub Release は作らない）。完了は `vigilia watch HEAD` で確認する（REST枠を使わずGraphQLで取得し、同じ対象は全セッションでキャッシュ共有されるため複数セッションが同時に見てよい。`-f skip_upload=true` は配信せず署名済み成果物だけを Actions に残す）。ローカル実行は検証・再開に使う。
 
 ```bash
 pwsh -NoProfile -File scripts/release-local.ps1               # フル (build+署名+R2 upload+旧 nupkg cleanup)
 pwsh -NoProfile -File scripts/release-local.ps1 -SkipUpload   # build+署名のみ (動作確認)
 ```
 
-前提: Sigilune を使えること（共通関数 `scripts/Sigilune.Common.ps1`。実行ファイルは `SIGILUNE_EXE` → PATH → `%USERPROFILE%\.local\Sigilune\bin\sigilune.exe`。ローカルは `sigilune setup` 済み、CI は Secrets `SIGILUNE_EMAIL` / `SIGILUNE_TOTP_URI`）/ `Directory.Build.props` の `<Version>` が目的版（`/vava` 済み）/ 環境変数 `CLOUDFLARE_API_TOKEN`（CI の Secret）、無ければ `C:\Users\IMT\dev\Secret\secrets.json` の `cloudflare.api_token`。Velopack は `--signTemplate "<sigilune> sign {{file}}"` で署名し、Sigilune が署名後に有効性・署名者・タイムスタンプを検証する。正規ルートは **`/vava` スキル**（バージョン bump → release ブランチ → リリース連携）。
+前提: Sigilune を使えること（共通関数 `scripts/Sigilune.Common.ps1`。実行ファイルは `SIGILUNE_EXE` → PATH → `%USERPROFILE%\.local\Sigilune\bin\sigilune.exe`。ローカルは `sigilune setup` 済み、CI は Secrets `SIGILUNE_EMAIL` / `SIGILUNE_TOTP_URI`）/ `Directory.Build.props` の `<Version>` が目的版（`/vava` 済み）/ 環境変数 `CLOUDFLARE_API_TOKEN`（CI の Secret）、無ければ `C:\Users\IMT\dev\Secret\secrets.json` の `cloudflare.api_token`。Velopack は `--signTemplate "<sigilune> sign {{file}}"` で署名し、Sigilune が署名後に有効性・署名者・タイムスタンプを検証する。正規ルートは **`/vava` スキル**（バージョン bump → 版タグ → リリース連携）。
 
 ## アーキテクチャ
 
@@ -62,9 +62,9 @@ View が VM コンストラクタに **2 つの `Action`（OFF+close / close の
 - 製品ページの配信は `vps-web/deploy/deploy-lp.ps1` を使う。公開ホスト・更新ファイルの既存経路を維持する。
 
 ## CI（`.github/workflows/`）
-- `dotnet-build.yml`: `release/**` 以外の push / PR で、R2 転送ヘルパーの検査（`tests/R2Transfer/Run.ps1`）と Release ビルドを行う。テストプロジェクトは無く `dotnet test` は実行しない。`release.yml` の `verify` ジョブからも `workflow_call` で呼ばれる。配信はしない。
+- `dotnet-build.yml`: ブランチの push / PR で、R2 転送ヘルパーの検査（`tests/R2Transfer/Run.ps1`）と Release ビルドを行う。テストプロジェクトは無く `dotnet test` は実行しない。`release.yml` の `verify` ジョブからも `workflow_call` で呼ばれる。配信はしない。
 - 製品ページの配信は `vps-web/deploy/deploy-lp.ps1` を使う。公開ホスト・更新ファイルの既存経路を維持する。
-- `release.yml`: `release/**` の push で起動（タグでは動かない。手動起動は同じブランチの再実行用）。先に `verify` ジョブ（上記の検証）が通った場合だけ、配信ジョブへ進む。Environment `release` の Secrets（`SIGILUNE_EMAIL` / `SIGILUNE_TOTP_URI` / `CLOUDFLARE_API_TOKEN`）を読む唯一のワークフローで、`scripts/release-local.ps1` を実行して署名・R2 配信する。終了時に `sigilune logout` する。
+- `release.yml`: 軽量タグ `v<版>` の push で起動（ブランチでは動かない。手動起動は同じタグの再実行用）。先に `guard` ジョブ（タグであること・`v<版>` の形・軽量タグが同じ commit を指すこと・main の祖先であること・`Directory.Build.props` の版との一致）と `verify` ジョブ（上記の検証）が通った場合だけ、配信ジョブへ進む。Environment `release` の Secrets（`SIGILUNE_EMAIL` / `SIGILUNE_TOTP_URI` / `CLOUDFLARE_API_TOKEN`）を読む唯一のワークフローで、`scripts/release-local.ps1` を実行して署名・R2 配信する。終了時に `sigilune logout` する。
 
 ## 注意点
 - 日本語コメント/文字列を含む PowerShell スクリプトは **UTF-8 BOM 付き**で保存する（PSScriptAnalyzer `PSUseBOMForUnicodeEncodedFile`。BOM 無しだと Windows PowerShell 5.1 が Shift-JIS と誤認して文字化けする）。
